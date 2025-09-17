@@ -1,11 +1,10 @@
 import React from "react";
 import { Head, Link } from "@inertiajs/react";
 import Layout from "../components/layouts";
-
 const PondokShow = ({ pondok }) => {
     console.log(pondok);
     // Static data for display (simulating a pondok received from props)
-    const pondokData = pondok 
+    const pondokData = pondok
     // || {
     //     id: 2,
     //     nama: "Pondok Tahfidz Al-Furqon",
@@ -27,10 +26,10 @@ const PondokShow = ({ pondok }) => {
 
     // Stats cards for this pondok
     const statsCards = [
-        { name: "Admin Cabang", value: pondokData.stats.adminCabang },
-        { name: "Guru", value: pondokData.stats.guru },
-        { name: "Santri", value: pondokData.stats.santri },
-        { name: "Kelas", value: pondokData.stats.kelas },
+        // { name: "Admin Cabang", value: pondokData.stats.adminCabang },
+        { name: "Guru", value: pondokData.gurus.length },
+        { name: "Santri", value: pondokData.santris.length },
+        { name: "Kelas", value: pondokData.kelas.length },
     ];
 
     return (
@@ -58,7 +57,7 @@ const PondokShow = ({ pondok }) => {
                                 <div className="flex-shrink-0 h-20 w-20">
                                     <img
                                         className="h-20 w-20 rounded-full object-cover border-2 border-gray-200"
-                                        src={pondokData.logo || "/logo.svg"}
+                                        src={`/storage/${pondokData.logo}` || "/logo.svg"}
                                         alt={pondokData.nama}
                                     />
                                 </div>

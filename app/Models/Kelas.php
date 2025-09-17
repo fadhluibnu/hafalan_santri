@@ -18,7 +18,7 @@ class Kelas extends Model
         'status',
     ];
 
-    public function kelas()
+    public function pondok()
     {
         return $this->belongsTo(Pondok::class, 'pondok_id');
     }

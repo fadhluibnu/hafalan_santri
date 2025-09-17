@@ -29,4 +29,19 @@ class Pondok extends Model
     {
         return $this->hasMany(AdminCabang::class);
     }
+
+    public function gurus(): HasMany
+    {
+        return $this->hasMany(Guru::class);
+    }
+
+    public function santris(): HasMany
+    {
+        return $this->hasMany(Santri::class);
+    }
+
+    public function kelas(): HasMany
+    {
+        return $this->hasMany(Kelas::class);
+    }
 }

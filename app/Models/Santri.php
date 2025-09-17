@@ -60,4 +60,9 @@ class Santri extends Model
     {
         return $this->hasOne(KesehatanSantri::class);
     }
+
+    public function pondok()
+    {
+        return $this->belongsTo(Pondok::class);
+    }
 }
