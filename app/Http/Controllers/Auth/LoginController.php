@@ -19,7 +19,7 @@ class LoginController extends Controller
     {
         return Inertia::render('Auth/Login');
     }
-    
+
     /**
      * Handle a login request to the application.
      */
@@ -31,31 +31,18 @@ class LoginController extends Controller
                 'email' => 'required_without:username|email',
                 'password' => 'required|string|min:6',
             ]);
-            
+
             // Determine if we're using email or username for authentication
             $loginField = $request->has('email') ? 'email' : 'username';
             $loginCredentials = [
                 $loginField => $request->input($loginField),
                 'password' => $request->password
             ];
-            
+
             if (Auth::attempt($loginCredentials)) {
                 $user = Auth::user();
-                
-                // Handle API requests
-                if ($request->expectsJson()) {
-                    $token = $request->user()->createToken($request->input($loginField));
-                    
-                    return response()->json([
-                        'message' => 'Login successful',
-                        'token' => $token->plainTextToken,
-                        'user' => $user
-                    ], 200);
-                }
-                
-                // Handle web requests
                 $request->session()->regenerate();
-                
+
                 // Redirect based on user role
                 switch ($user->role) {
                     case 'super_admin':
@@ -74,42 +61,27 @@ class LoginController extends Controller
             }
 
             // Authentication failed
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'message' => 'Invalid credentials',
-                    'token' => null
-                ], 401);
-            }
-
             return back()->withErrors([
-                $loginField => 'The provided credentials do not match our records.',
+                'error' => 'The provided credentials do not match our records.',
             ])->withInput();
-
         } catch (Exception $e) {
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'message' => 'An error occurred during login',
-                    'error' => $e->getMessage()
-                ], 500);
-            }
-            
             return back()->withErrors([
                 'error' => 'An error occurred during login: ' . $e->getMessage(),
             ]);
         }
     }
-    
+
     /**
      * Log the user out of the application.
      */
     public function logout(Request $request)
     {
         Auth::logout();
-        
+
         if ($request->expectsJson()) {
             return response()->json(['message' => 'Logged out successfully']);
         }
-        
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

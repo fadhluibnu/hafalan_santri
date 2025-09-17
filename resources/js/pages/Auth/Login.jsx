@@ -3,7 +3,7 @@ import { Head, useForm, Link } from '@inertiajs/react';
 
 export default function Login() {
     const { data, setData, post, processing, errors } = useForm({
-        username: '',
+        email: '',
         password: '',
         remember: false,
     });
@@ -27,22 +27,27 @@ export default function Login() {
                         Masuk ke akun Anda
                     </p>
                 </div>
+                {errors.error && (
+                    <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">
+                        {errors.error}
+                    </div>
+                )}
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                     <div className="rounded-md shadow-sm -space-y-px">
                         <div>
-                            <label htmlFor="username" className="sr-only">Username</label>
+                            <label htmlFor="email" className="sr-only">Email</label>
                             <input
-                                id="username"
-                                name="username"
+                                id="email"
+                                name="email"
                                 type="text"
                                 required
                                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                                placeholder="Username"
-                                value={data.username}
-                                onChange={e => setData('username', e.target.value)}
+                                placeholder="email"
+                                value={data.email}
+                                onChange={e => setData('email', e.target.value)}
                             />
-                            {errors.username && (
-                                <div className="text-red-500 text-xs mt-1">{errors.username}</div>
+                            {errors.email && (
+                                <div className="text-red-500 text-xs mt-1">{errors.email}</div>
                             )}
                         </div>
                         <div className="relative">
