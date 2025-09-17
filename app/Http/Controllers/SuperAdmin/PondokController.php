@@ -16,6 +16,7 @@ class PondokController extends Controller
     public function index()
     {
         $pondoks = Pondok::with(['gurus', 'santris'])->orderBy('created_at', 'desc')->paginate(10);
+
         return Inertia::render('SuperAdmin/Pondok/Index', [
             'pondoks' => $pondoks,
         ]);
@@ -34,26 +35,37 @@ class PondokController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'nama' => 'required|string|max:255',
-            'alamat' => 'required|string|max:500',
-            'telepon' => 'required|string|max:20',
-            'email' => 'required|email|max:255|unique:pondoks,email',
-            'website' => 'nullable|url|max:255',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'deskripsi' => 'nullable|string',
-            'tahun_berdiri' => 'nullable|integer|min:1900|max:' . date('Y'),
-        ]);
+        try {
+            $validated = $request->validate([
+                'nama' => 'required|string|max:255',
+                'alamat' => 'required|string|max:500',
+                'telepon' => 'required|string|max:20',
+                'email' => 'required|email|max:255|unique:pondoks,email',
+                'website' => 'nullable|url|max:255',
+                'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'deskripsi' => 'nullable|string',
+                'tahun_berdiri' => 'nullable|integer|min:1900|max:' . date('Y'),
+            ]);
 
-        if ($request->hasFile('logo')) {
-            $path = $request->file('logo')->store('pondok-logos', 'public');
-            $validated['logo'] = $path;
+            if ($request->hasFile('logo')) {
+                $path = $request->file('logo')->store('pondok-logos', 'public');
+                if (!$path) {
+                    return redirect()->back()->withErrors(['logo' => 'Gagal mengunggah logo.']);
+                }
+                $validated['logo'] = $path;
+            }
+
+            $pondok = Pondok::create($validated);
+
+            if (!$pondok) {
+                return redirect()->back()->withErrors(['error' => 'Gagal menambahkan pondok.']);
+            }
+
+            return redirect()->route('super-admin.pondok.index')
+                ->with('success', 'Pondok berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
         }
-
-        $pondok = Pondok::create($validated);
-
-        return redirect()->route('super-admin.pondok.index')
-            ->with('success', 'Pondok berhasil ditambahkan.');
     }
 
     /**
@@ -82,32 +94,47 @@ class PondokController extends Controller
      */
     public function update(Request $request, Pondok $pondok)
     {
-        // return $request->all();
-        $validated = $request->validate([
-            'nama' => 'sometimes|required|string|max:255',
-            'alamat' => 'sometimes|required|string|max:500',
-            'telepon' => 'sometimes|required|string|max:20',
-            'email' => 'sometimes|required|email|max:255|unique:pondoks,email,' . $pondok->id,
-            'website' => 'sometimes|nullable|url|max:255',
-            'logo' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'deskripsi' => 'sometimes|nullable|string',
-            'tahun_berdiri' => 'sometimes|integer|min:1900|max:' . date('Y'),
-        ]);
+        try {
+            $validated = $request->validate([
+                'nama' => 'sometimes|required|string|max:255',
+                'alamat' => 'sometimes|required|string|max:500',
+                'telepon' => 'sometimes|required|string|max:20',
+                'email' => "sometimes|required|email|max:255|unique:pondoks,email,{$pondok->id}",
+                'website' => 'sometimes|nullable|url|max:255',
+                'logo' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'deskripsi' => 'sometimes|nullable|string',
+                'tahun_berdiri' => 'sometimes|integer|min:1900|max:' . date('Y'),
+            ]);
 
-        if ($request->hasFile('logo')) {
-            // Delete old logo if exists
-            if ($pondok->logo && Storage::disk('public')->exists($pondok->logo)) {
-                Storage::disk('public')->delete($pondok->logo);
+            if ($request->hasFile('logo')) {
+                // Delete old logo if exists
+                if ($pondok->logo && Storage::disk('public')->exists($pondok->logo)) {
+                    if (!Storage::disk('public')->delete($pondok->logo)) {
+                        return redirect()->back()->withErrors(['error' => 'Gagal menghapus logo lama.']);
+                    }
+                }
+
+                $path = $request->file('logo')->store('pondok-logos', 'public');
+                if (!$path) {
+                    return redirect()->back()->withErrors(['error' => 'Gagal mengunggah logo baru.']);
+                }
+                $validated['logo'] = $path;
+            } else {
+                // Prevent logo from being set to null if not uploading a new file
+                unset($validated['logo']);
             }
-            
-            $path = $request->file('logo')->store('pondok-logos', 'public');
-            $validated['logo'] = $path;
+
+            $updated = $pondok->update($validated);
+
+            if (!$updated) {
+                return redirect()->back()->withErrors(['error' => 'Gagal memperbarui pondok.']);
+            }
+
+            return redirect()->route('super-admin.pondok.index')
+                ->with('success', 'Pondok berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
         }
-
-        $pondok->update($validated);
-
-        return redirect()->route('super-admin.pondok.index')
-            ->with('success', 'Pondok berhasil diperbarui.');
     }
 
     /**
@@ -119,12 +146,12 @@ class PondokController extends Controller
         if ($pondok->adminCabangs()->count() > 0) {
             return back()->with('error', 'Tidak dapat menghapus pondok yang masih memiliki Admin Cabang.');
         }
-        
+
         // Delete logo if exists
         if ($pondok->logo && Storage::disk('public')->exists($pondok->logo)) {
             Storage::disk('public')->delete($pondok->logo);
         }
-        
+
         $pondok->delete();
 
         return redirect()->route('super-admin.pondok.index')

@@ -51,6 +51,12 @@ const PondokEdit = ({ pondok }) => {
 
             <div className="py-6">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                    {errors.error && (
+                        <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">
+                            {errors.error}
+                        </div>
+                    )}
+                    
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-2xl font-semibold text-gray-900">Edit Pondok</h1>
                         <Link

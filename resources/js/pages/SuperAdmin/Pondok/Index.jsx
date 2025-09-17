@@ -1,12 +1,12 @@
-import React from "react";
-import { Head, Link } from "@inertiajs/react";
+import { Head, Link, usePage } from "@inertiajs/react";
 import Layout from "../components/layouts";
 import Table from "../components/Table";
 
 const PondokIndex = ({ pondoks }) => {
-    console.log(pondoks);
-    // Static data for display purposes
-    const pondoksData = pondoks.data
+
+    const { flash } = usePage().props;
+
+    const pondoksData = pondoks.data;
 
     const columns = [
         {
@@ -50,6 +50,12 @@ const PondokIndex = ({ pondoks }) => {
 
             <div className="py-6">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                    {flash.success && (
+                        <div className="mb-4 p-4 bg-green-100 text-green-700 rounded">
+                            {flash.success}
+                        </div>
+                    )}
+                    
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-2xl font-semibold text-gray-900">Daftar Pondok</h1>
                         <Link
@@ -69,27 +75,48 @@ const PondokIndex = ({ pondoks }) => {
                                     className="w-full sm:w-1/3 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                                 />
                             </div>
-                            
+
                             <Table
                                 columns={columns}
                                 data={pondoksData}
                                 baseRoute="/super-admin/pondok"
                             />
 
-                            <div className="mt-4 flex justify-between">
+                            <div className="mt-4 flex justify-between items-center">
                                 <div className="text-sm text-gray-500">
-                                    Menampilkan {pondoksData.length} dari {pondoksData.length} pondok
+                                    Menampilkan {pondoks.from} sampai {pondoks.to} dari {pondoks.total} pondok
                                 </div>
                                 <div className="flex space-x-2">
-                                    <button className="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                        Sebelumnya
-                                    </button>
-                                    <button className="px-3 py-1 bg-indigo-50 border border-indigo-500 rounded-md text-sm font-medium text-indigo-600 hover:bg-indigo-100">
-                                        1
-                                    </button>
-                                    <button className="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                        Berikutnya
-                                    </button>
+                                    {pondoks.links.map((link, idx) => {
+                                        // Remove html entities from label for Previous/Next
+                                        const label = link.label.replace(/&laquo;|&raquo;|<[^>]+>/g, match => {
+                                            if (match === "&laquo;") return "«";
+                                            if (match === "&raquo;") return "»";
+                                            return "";
+                                        }).trim() || link.label;
+
+                                        return link.url ? (
+                                            <Link
+                                                key={idx}
+                                                href={link.url}
+                                                preserveScroll
+                                                className={`px-3 py-1 border rounded-md text-sm font-medium ${link.active
+                                                        ? "bg-indigo-50 border-indigo-500 text-indigo-600"
+                                                        : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                                                    }`}
+                                                disabled={link.url === null}
+                                            >
+                                                {label}
+                                            </Link>
+                                        ) : (
+                                            <span
+                                                key={idx}
+                                                className="px-3 py-1 border border-gray-200 rounded-md text-sm font-medium text-gray-400 cursor-not-allowed"
+                                            >
+                                                {label}
+                                            </span>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>
