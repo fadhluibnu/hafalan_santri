@@ -3,7 +3,12 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminCabang;
+use App\Models\Guru;
+use App\Models\Pondok;
+use App\Models\Santri;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
@@ -12,7 +17,20 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        //
+        $pondok = Pondok::count();
+        $adminCabang = AdminCabang::count();
+        $guru = Guru::count();
+        $santri = Santri::count();
+
+        $summary = [
+            'pondokCount' => $pondok,
+            'adminCabangCount' => $adminCabang,
+            'guruCount' => $guru,
+            'santriCount' => $santri,
+        ];
+        return Inertia::render('SuperAdmin/Dashboard', [
+            'summary' => $summary
+        ]);
     }
 
     /**

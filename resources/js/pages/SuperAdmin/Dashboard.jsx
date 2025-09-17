@@ -30,12 +30,14 @@ const StudentIcon = () => (
 
 const Dashboard = ({ summary }) => {
     // Static data for display purposes
-    const stats = summary || {
-        pondokCount: 8,
-        adminCabangCount: 15,
-        guruCount: 42,
-        santriCount: 560
-    };
+    console.log(summary);
+    const stats = summary 
+    // || {
+    //     pondokCount: 8,
+    //     adminCabangCount: 15,
+    //     guruCount: 42,
+    //     santriCount: 560
+    // };
 
     // Recent activity data (static)
     const recentActivities = [
@@ -115,7 +117,7 @@ const Dashboard = ({ summary }) => {
                         </div>
                         
                         {/* Recent Activity Section */}
-                        <div className="mt-8">
+                        {/* <div className="mt-8">
                             <div className="flex justify-between items-center">
                                 <h2 className="text-lg font-medium text-gray-900">Aktivitas Terkini</h2>
                                 <button className="text-sm text-indigo-600 hover:text-indigo-900">
@@ -138,10 +140,10 @@ const Dashboard = ({ summary }) => {
                                 </div>
                             </div>
                         </div>
-                        
+                         */}
                         {/* Quick Stats */}
-                        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2">
-                            {/* Statistik Hafalan */}
+                        {/* <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2">
+
                             <div className="bg-white shadow overflow-hidden sm:rounded-lg">
                                 <div className="px-4 py-5 sm:p-6">
                                     <h3 className="text-lg font-medium text-gray-900 mb-4">Statistik Hafalan</h3>
@@ -166,7 +168,6 @@ const Dashboard = ({ summary }) => {
                                 </div>
                             </div>
                             
-                            {/* Perkembangan Pondok */}
                             <div className="bg-white shadow overflow-hidden sm:rounded-lg">
                                 <div className="px-4 py-5 sm:p-6">
                                     <h3 className="text-lg font-medium text-gray-900 mb-4">Perkembangan Pondok</h3>
@@ -190,7 +191,7 @@ const Dashboard = ({ summary }) => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             </div>

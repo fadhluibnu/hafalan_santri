@@ -122,6 +122,31 @@ export default function Layout({ children, title }) {
             </Link>
           </div>
         </nav>
+        {/* Tambahkan menu logout */}
+        <div className="px-4 py-2 mt-4 border-t">
+          <Link
+            href="/logout"
+            method="get"
+            as="a"
+            className="flex items-center py-2 px-4 text-red-600 hover:bg-red-100 hover:text-red-700 rounded-md transition duration-150 ease-in-out"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-3"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1"
+              />
+            </svg>
+            {isSidebarOpen && <span>Logout</span>}
+          </Link>
+        </div>
       </div>
 
       {/* Main Content */}
