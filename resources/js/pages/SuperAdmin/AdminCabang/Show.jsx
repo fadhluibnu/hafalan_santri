@@ -1,34 +1,35 @@
 import React from "react";
-import { Head, Link } from "@inertiajs/react";
+import { Head, Link, useForm, router } from "@inertiajs/react";
 import Layout from "../components/layouts";
 
 const AdminCabangShow = ({ adminCabang }) => {
     // Static data for display (simulating an admin cabang received from props)
-    const adminCabangData = adminCabang || {
-        id: 2,
-        user_id: 3,
-        pondok_id: 2,
-        name: "Budi Santoso",
-        phone: "081234567891",
-        jabatan: "Kepala Cabang",
-        created_at: "2025-05-15T08:30:00.000Z",
-        updated_at: "2025-08-20T10:15:00.000Z",
-        pondok: {
-            id: 2,
-            nama: "Pondok Tahfidz Al-Furqon",
-            alamat: "Jl. Pahlawan No. 45, Bandung"
-        },
-        user: {
-            id: 3,
-            email: "budi@example.com",
-            created_at: "2025-05-15T08:30:00.000Z"
-        }
-    };
+    console.log(adminCabang);
+    const adminCabangData = adminCabang
 
     // Format dates for display
     const formatDate = (dateString) => {
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         return new Date(dateString).toLocaleDateString('id-ID', options);
+    };
+
+    const { data, setData, post, processing, errors } = useForm({
+        name: adminCabangData.name,
+        email: adminCabangData.user.email,
+        username: adminCabangData.user.username,
+        phone: adminCabangData.phone,
+        jabatan: adminCabangData.jabatan,
+        pondok_id: adminCabangData.pondok_id,
+        password: "",
+        _method: "PUT",
+    });
+
+    const handleStatus = (param) => {
+        console.log(param);
+        router.post(route("super-admin.admin-cabang.update", adminCabangData.id), {
+            ...data,
+            status: param
+        });
     };
 
     return (
@@ -37,6 +38,11 @@ const AdminCabangShow = ({ adminCabang }) => {
 
             <div className="py-6">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                    {errors.error && (
+                        <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">
+                            {errors.error}
+                        </div>
+                    )}
                     <div className="mb-6">
                         <Link
                             href="/super-admin/admin-cabang"
@@ -79,6 +85,10 @@ const AdminCabangShow = ({ adminCabang }) => {
                                     <dt className="text-sm font-medium text-gray-500">Nama Lengkap</dt>
                                     <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{adminCabangData.name}</dd>
                                 </div>
+                                <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                    <dt className="text-sm font-medium text-gray-500">Username</dt>
+                                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{adminCabangData.user.username}</dd>
+                                </div>
                                 <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                                     <dt className="text-sm font-medium text-gray-500">Email</dt>
                                     <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{adminCabangData.user.email}</dd>
@@ -95,6 +105,11 @@ const AdminCabangShow = ({ adminCabang }) => {
                                     <dt className="text-sm font-medium text-gray-500">Bergabung Sejak</dt>
                                     <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{formatDate(adminCabangData.created_at)}</dd>
                                 </div>
+
+                                <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                    <dt className="text-sm font-medium text-gray-500">Status Akun</dt>
+                                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{adminCabangData.user.status == 1 ? 'Aktif' : 'Tidak Aktif'}</dd>
+                                </div>
                             </dl>
                         </div>
                     </div>
@@ -110,7 +125,7 @@ const AdminCabangShow = ({ adminCabang }) => {
                                 <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                                     <dt className="text-sm font-medium text-gray-500">Nama Pondok</dt>
                                     <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                        <Link 
+                                        <Link
                                             href={`/super-admin/pondok/${adminCabangData.pondok.id}`}
                                             className="text-indigo-600 hover:text-indigo-900"
                                         >
@@ -128,23 +143,39 @@ const AdminCabangShow = ({ adminCabang }) => {
 
                     {/* Actions */}
                     <div className="flex justify-end space-x-4">
-                        <button
-                            type="button"
-                            className="px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700"
-                            onClick={() => {
-                                if (confirm("Apakah Anda yakin ingin menonaktifkan admin ini?")) {
-                                    // Handle non-activation logic here
-                                }
-                            }}
-                        >
-                            Nonaktifkan Admin
-                        </button>
-                        <Link
+                        {
+                            adminCabangData.user.status == 1 ? (
+                                <button
+                                    type="button"
+                                    className="px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700"
+                                    onClick={() => {
+                                        if (confirm("Apakah Anda yakin ingin menonaktifkan admin ini?")) {
+                                            handleStatus(0)
+                                        }
+                                    }}
+                                >
+                                    Nonaktifkan Admin
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    className="px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700"
+                                    onClick={() => {
+                                        if (confirm("Apakah Anda yakin ingin Mengaktifkan admin ini?")) {
+                                            handleStatus(1)
+                                        }
+                                    }}
+                                >
+                                    Aktifkan Admin
+                                </button>
+                            )
+                        }
+                        {/* <Link
                             href={`/super-admin/admin-cabang/${adminCabangData.id}/reset-password`}
                             className="px-4 py-2 bg-yellow-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-yellow-700"
                         >
                             Reset Password
-                        </Link>
+                        </Link> */}
                     </div>
                 </div>
             </div>

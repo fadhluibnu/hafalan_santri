@@ -132,40 +132,59 @@ class AdminCabangController extends Controller
      */
     public function update(Request $request, AdminCabang $adminCabang)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:15',
-            'jabatan' => 'required|string|max:50',
-            'pondok_id' => 'required|exists:pondoks,id',
-            'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($adminCabang->user_id)],
-            'username' => ['required', 'string', 'max:255', Rule::unique('users', 'username')->ignore($adminCabang->user_id)],
-            'password' => 'nullable|string|min:8|confirmed',
-        ]);
+        DB::beginTransaction();
 
-        // Update user data
-        $user = User::findOrFail($adminCabang->user_id);
-        $userData = [
-            'username' => $request->username,
-            'email' => $request->email,
-        ];
+        try {
+            $request->validate([
+                'name' => 'sometimes|required|string|max:255',
+                'phone' => 'sometimes|required|string|max:15',
+                'jabatan' => 'sometimes|required|string|max:50',
+                'pondok_id' => 'sometimes|required|exists:pondoks,id',
+                'email' => ['sometimes', 'required', 'email', Rule::unique('users', 'email')->ignore($adminCabang->user_id)],
+                'username' => ['sometimes', 'required', 'string', 'max:255', Rule::unique('users', 'username')->ignore($adminCabang->user_id)],
+                'password' => 'sometimes|nullable|string|min:8',
+                'status' => 'sometimes|required|in:0,1',
+            ]);
 
-        // Only update password if provided
-        if ($request->filled('password')) {
-            $userData['password'] = Hash::make($request->password);
+            // Update user data
+            $user = User::findOrFail($adminCabang->user_id);
+            $userData = [
+                'username' => $request->username,
+                'email' => $request->email,
+                'status' => $request->status
+            ];
+
+            if ($request->filled('password')) {
+                $userData['password'] = Hash::make($request->password);
+            }
+
+            if (!$user->update($userData)) {
+                throw new \Exception('Gagal mengupdate data user.');
+            }
+
+            // Update admin cabang data
+            $adminCabangUpdate = $adminCabang->update([
+                'name' => $request->name,
+                'phone' => $request->phone,
+                'jabatan' => $request->jabatan,
+                'pondok_id' => $request->pondok_id,
+            ]);
+
+            if (!$adminCabangUpdate) {
+                throw new \Exception('Gagal mengupdate data admin cabang.');
+            }
+
+            DB::commit();
+
+            return redirect()->route('super-admin.admin-cabang.index')
+                ->with('success', 'Admin Cabang berhasil diperbarui.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()])
+                ->withInput();
         }
-
-        $user->update($userData);
-
-        // Update admin cabang data
-        $adminCabang->update([
-            'name' => $request->name,
-            'phone' => $request->phone,
-            'jabatan' => $request->jabatan,
-            'pondok_id' => $request->pondok_id,
-        ]);
-
-        return redirect()->route('super-admin.admin-cabang.index')
-            ->with('success', 'Admin Cabang berhasil diperbarui.');
     }
 
     /**

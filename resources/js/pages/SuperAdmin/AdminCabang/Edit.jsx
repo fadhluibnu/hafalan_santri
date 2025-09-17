@@ -5,37 +5,23 @@ import FormInput from "../components/FormInput";
 
 const AdminCabangEdit = ({ adminCabang, pondoks }) => {
     // Static data for the form (simulating an admin cabang received from props)
-    const adminCabangData = adminCabang || {
-        id: 2,
-        user_id: 3,
-        pondok_id: 2,
-        name: "Budi Santoso",
-        phone: "081234567891",
-        jabatan: "Kepala Cabang",
-        user: {
-            id: 3,
-            email: "budi@example.com"
-        }
-    };
-
+    const adminCabangData = adminCabang
     // Static data for pondok options (simulating data received from props)
-    const pondokOptions = pondoks || [
-        { value: 1, label: "Pondok Tahfidz Al-Quran Baitul Hikmah" },
-        { value: 2, label: "Pondok Tahfidz Al-Furqon" },
-        { value: 3, label: "Pondok Tahfidz Darul Quran" },
-        { value: 4, label: "Pondok Pesantren As-Salam" },
-        { value: 5, label: "Pondok Tahfidz An-Nur" }
-    ];
+    const pondokOptions = pondoks.map(p => ({
+        value: p.id,
+        label: p.nama
+    }));
 
     // Using Inertia's useForm for form handling
-    const { data, setData, put, processing, errors } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
         name: adminCabangData.name,
         email: adminCabangData.user.email,
+        username: adminCabangData.user.username,
         phone: adminCabangData.phone,
         jabatan: adminCabangData.jabatan,
         pondok_id: adminCabangData.pondok_id,
+        status: adminCabangData.user.status,
         password: "",
-        password_confirmation: "",
         _method: "PUT",
     });
 
@@ -47,8 +33,8 @@ const AdminCabangEdit = ({ adminCabang, pondoks }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         // In a real application, this would submit to the backend
-        alert("Form updated with data: " + JSON.stringify(data));
-        // put(route("super-admin.admin-cabang.update", adminCabangData.id));
+        // alert("Form updated with data: " + JSON.stringify(data));
+        post(route("super-admin.admin-cabang.update", adminCabangData.id));
     };
 
     return (
@@ -57,6 +43,12 @@ const AdminCabangEdit = ({ adminCabang, pondoks }) => {
 
             <div className="py-6">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                    {errors.error && (
+                        <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">
+                            {errors.error}
+                        </div>
+                    )}
+
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-2xl font-semibold text-gray-900">Edit Admin Cabang</h1>
                         <Link
@@ -80,7 +72,16 @@ const AdminCabangEdit = ({ adminCabang, pondoks }) => {
                                             error={errors.name}
                                             required
                                         />
-                                        
+
+                                        <FormInput
+                                            label="Username"
+                                            name="username"
+                                            value={data.username}
+                                            onChange={handleChange}
+                                            error={errors.username}
+                                            required
+                                        />
+
                                         <FormInput
                                             label="Email"
                                             name="email"
@@ -90,7 +91,7 @@ const AdminCabangEdit = ({ adminCabang, pondoks }) => {
                                             error={errors.email}
                                             required
                                         />
-                                        
+
                                         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
                                             <div className="flex">
                                                 <div className="flex-shrink-0">
@@ -105,7 +106,7 @@ const AdminCabangEdit = ({ adminCabang, pondoks }) => {
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <FormInput
                                             label="Password Baru"
                                             name="password"
@@ -114,17 +115,8 @@ const AdminCabangEdit = ({ adminCabang, pondoks }) => {
                                             onChange={handleChange}
                                             error={errors.password}
                                         />
-
-                                        <FormInput
-                                            label="Konfirmasi Password Baru"
-                                            name="password_confirmation"
-                                            type="password"
-                                            value={data.password_confirmation}
-                                            onChange={handleChange}
-                                            error={errors.password_confirmation}
-                                        />
                                     </div>
-                                    
+
                                     <div>
                                         <FormInput
                                             label="Nomor Telepon"
@@ -134,7 +126,7 @@ const AdminCabangEdit = ({ adminCabang, pondoks }) => {
                                             error={errors.phone}
                                             required
                                         />
-                                        
+
                                         <FormInput
                                             label="Jabatan"
                                             name="jabatan"
@@ -143,7 +135,7 @@ const AdminCabangEdit = ({ adminCabang, pondoks }) => {
                                             error={errors.jabatan}
                                             required
                                         />
-                                        
+
                                         <FormInput
                                             label="Pondok"
                                             name="pondok_id"
