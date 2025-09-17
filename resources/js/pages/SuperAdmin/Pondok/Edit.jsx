@@ -18,7 +18,7 @@ const PondokEdit = ({ pondok }) => {
     };
 
     // Using Inertia's useForm for form handling
-    const { data, setData, put, processing, errors } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
         nama: pondokData.nama,
         alamat: pondokData.alamat,
         telepon: pondokData.telepon,
@@ -41,8 +41,8 @@ const PondokEdit = ({ pondok }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         // In a real application, this would submit to the backend
-        alert("Form updated with data: " + JSON.stringify(data));
-        // put(route("super-admin.pondok.update", pondokData.id));
+        // alert("Form updated with data: " + JSON.stringify(data));
+        post(route("super-admin.pondok.update", pondokData.id));
     };
 
     return (
@@ -63,7 +63,7 @@ const PondokEdit = ({ pondok }) => {
 
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 bg-white border-b border-gray-200">
-                            <form onSubmit={handleSubmit}>
+                            <form onSubmit={handleSubmit} encType="multipart/form-data">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <FormInput

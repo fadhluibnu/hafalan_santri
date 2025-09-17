@@ -82,15 +82,16 @@ class PondokController extends Controller
      */
     public function update(Request $request, Pondok $pondok)
     {
+        // return $request->all();
         $validated = $request->validate([
-            'nama' => 'required|string|max:255',
-            'alamat' => 'required|string|max:500',
-            'telepon' => 'required|string|max:20',
-            'email' => 'required|email|max:255|unique:pondoks,email,' . $pondok->id,
-            'website' => 'nullable|url|max:255',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'deskripsi' => 'nullable|string',
-            'tahun_berdiri' => 'nullable|integer|min:1900|max:' . date('Y'),
+            'nama' => 'sometimes|required|string|max:255',
+            'alamat' => 'sometimes|required|string|max:500',
+            'telepon' => 'sometimes|required|string|max:20',
+            'email' => 'sometimes|required|email|max:255|unique:pondoks,email,' . $pondok->id,
+            'website' => 'sometimes|nullable|url|max:255',
+            'logo' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'deskripsi' => 'sometimes|nullable|string',
+            'tahun_berdiri' => 'sometimes|integer|min:1900|max:' . date('Y'),
         ]);
 
         if ($request->hasFile('logo')) {

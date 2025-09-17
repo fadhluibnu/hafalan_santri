@@ -1,10 +1,15 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Link } from "@inertiajs/react";
+import { Link, router } from "@inertiajs/react";
+import { route } from "ziggy-js";
 
 const Table = ({ columns, data, actions = true, baseRoute = "" }) => {
     // Pastikan data adalah array
     const safeData = Array.isArray(data) ? data : [];
+
+    const deleteData = (id) => {
+        router.delete(route(`super-admin.pondok.destroy`, id), {  preserveScroll: true});
+    }
     return (
         <div className="overflow-x-auto relative shadow-md sm:rounded-lg">
             <table className="w-full text-sm text-left text-gray-500">
@@ -44,6 +49,7 @@ const Table = ({ columns, data, actions = true, baseRoute = "" }) => {
                                         onClick={() => {
                                             if (confirm("Yakin ingin menghapus item ini?")) {
                                                 // Handle delete action here
+                                                deleteData(row.id);
                                             }
                                         }}
                                         className="text-red-600 hover:text-red-900 ml-2"
