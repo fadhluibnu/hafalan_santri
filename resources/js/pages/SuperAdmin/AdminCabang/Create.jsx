@@ -5,20 +5,18 @@ import FormInput from "../components/FormInput";
 
 const AdminCabangCreate = ({ pondoks }) => {
     // Static data for pondok options (simulating data received from props)
-    const pondokOptions = pondoks || [
-        { value: 1, label: "Pondok Tahfidz Al-Quran Baitul Hikmah" },
-        { value: 2, label: "Pondok Tahfidz Al-Furqon" },
-        { value: 3, label: "Pondok Tahfidz Darul Quran" },
-        { value: 4, label: "Pondok Pesantren As-Salam" },
-        { value: 5, label: "Pondok Tahfidz An-Nur" }
-    ];
+    const pondokOptions = pondoks.map(p => ({
+        value: p.id,
+        label: p.nama
+    }));
 
     // Using Inertia's useForm for form handling
     const { data, setData, post, processing, errors } = useForm({
         name: "",
+        username: "",
         email: "",
         password: "",
-        password_confirmation: "",
+        // password_confirmation: "",
         phone: "",
         jabatan: "Kepala Cabang",
         pondok_id: "",
@@ -32,8 +30,8 @@ const AdminCabangCreate = ({ pondoks }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         // In a real application, this would submit to the backend
-        alert("Form submitted with data: " + JSON.stringify(data));
-        // post(route("super-admin.admin-cabang.store"));
+        // alert("Form submitted with data: " + JSON.stringify(data));
+        post(route("super-admin.admin-cabang.store"));
     };
 
     return (
@@ -42,6 +40,12 @@ const AdminCabangCreate = ({ pondoks }) => {
 
             <div className="py-6">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                    {errors.error && (
+                        <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">
+                            {errors.error}
+                        </div>
+                    )}
+
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-2xl font-semibold text-gray-900">Tambah Admin Cabang</h1>
                         <Link
@@ -65,7 +69,15 @@ const AdminCabangCreate = ({ pondoks }) => {
                                             error={errors.name}
                                             required
                                         />
-                                        
+                                        <FormInput
+                                            label="Username"
+                                            name="username"
+                                            value={data.username}
+                                            onChange={handleChange}
+                                            error={errors.username}
+                                            required
+                                        />
+
                                         <FormInput
                                             label="Email"
                                             name="email"
@@ -75,7 +87,7 @@ const AdminCabangCreate = ({ pondoks }) => {
                                             error={errors.email}
                                             required
                                         />
-                                        
+
                                         <FormInput
                                             label="Password"
                                             name="password"
@@ -86,7 +98,7 @@ const AdminCabangCreate = ({ pondoks }) => {
                                             required
                                         />
 
-                                        <FormInput
+                                        {/* <FormInput
                                             label="Konfirmasi Password"
                                             name="password_confirmation"
                                             type="password"
@@ -94,9 +106,9 @@ const AdminCabangCreate = ({ pondoks }) => {
                                             onChange={handleChange}
                                             error={errors.password_confirmation}
                                             required
-                                        />
+                                        /> */}
                                     </div>
-                                    
+
                                     <div>
                                         <FormInput
                                             label="Nomor Telepon"
@@ -106,7 +118,7 @@ const AdminCabangCreate = ({ pondoks }) => {
                                             error={errors.phone}
                                             required
                                         />
-                                        
+
                                         <FormInput
                                             label="Jabatan"
                                             name="jabatan"
@@ -115,7 +127,7 @@ const AdminCabangCreate = ({ pondoks }) => {
                                             error={errors.jabatan}
                                             required
                                         />
-                                        
+
                                         <FormInput
                                             label="Pondok"
                                             name="pondok_id"
@@ -134,7 +146,7 @@ const AdminCabangCreate = ({ pondoks }) => {
                                         <span>* </span>
                                         <span>Wajib diisi</span>
                                     </div>
-                                    
+
                                     <div className="flex items-center space-x-3">
                                         <button
                                             type="button"

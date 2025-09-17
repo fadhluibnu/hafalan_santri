@@ -1,92 +1,12 @@
 import React from "react";
-import { Head, Link } from "@inertiajs/react";
+import { Head, Link, usePage } from "@inertiajs/react";
 import Layout from "../components/layouts";
 import Table from "../components/Table";
 
 const AdminCabangIndex = ({ adminCabangs }) => {
-    // Static data for display purposes
-    const adminCabangsData = adminCabangs || [
-        {
-            id: 1,
-            user_id: 2,
-            pondok_id: 1,
-            name: "Ahmad Farhan",
-            phone: "081234567890",
-            jabatan: "Kepala Cabang",
-            pondok: {
-                id: 1,
-                nama: "Pondok Tahfidz Al-Quran Baitul Hikmah"
-            },
-            user: {
-                id: 2,
-                email: "farhan@example.com"
-            }
-        },
-        {
-            id: 2,
-            user_id: 3,
-            pondok_id: 2,
-            name: "Budi Santoso",
-            phone: "081234567891",
-            jabatan: "Kepala Cabang",
-            pondok: {
-                id: 2,
-                nama: "Pondok Tahfidz Al-Furqon"
-            },
-            user: {
-                id: 3,
-                email: "budi@example.com"
-            }
-        },
-        {
-            id: 3,
-            user_id: 4,
-            pondok_id: 3,
-            name: "Citra Dewi",
-            phone: "081234567892",
-            jabatan: "Kepala Cabang",
-            pondok: {
-                id: 3,
-                nama: "Pondok Tahfidz Darul Quran"
-            },
-            user: {
-                id: 4,
-                email: "citra@example.com"
-            }
-        },
-        {
-            id: 4,
-            user_id: 5,
-            pondok_id: 1,
-            name: "Dedi Purnama",
-            phone: "081234567893",
-            jabatan: "Wakil Kepala Cabang",
-            pondok: {
-                id: 1,
-                nama: "Pondok Tahfidz Al-Quran Baitul Hikmah"
-            },
-            user: {
-                id: 5,
-                email: "dedi@example.com"
-            }
-        },
-        {
-            id: 5,
-            user_id: 6,
-            pondok_id: 2,
-            name: "Eva Mulyana",
-            phone: "081234567894",
-            jabatan: "Wakil Kepala Cabang",
-            pondok: {
-                id: 2,
-                nama: "Pondok Tahfidz Al-Furqon"
-            },
-            user: {
-                id: 6,
-                email: "eva@example.com"
-            }
-        }
-    ];
+    const { flash } = usePage().props;
+
+    const adminCabangsData = adminCabangs.data;
 
     const columns = [
         {
@@ -111,7 +31,7 @@ const AdminCabangIndex = ({ adminCabangs }) => {
             header: "Pondok",
             accessor: "pondok.nama",
             render: (row) => (
-                <Link 
+                <Link
                     href={`/super-admin/pondok/${row.pondok_id}`}
                     className="text-indigo-600 hover:text-indigo-900"
                 >
@@ -121,12 +41,49 @@ const AdminCabangIndex = ({ adminCabangs }) => {
         },
     ];
 
+    // Pagination component
+    const Pagination = ({ links }) => (
+        <nav className="flex space-x-2">
+            {links.map((link, idx) => {
+                // Remove html tags from label
+                const label = link.label.replace(/(<([^>]+)>)/gi, "");
+                if (!link.url) {
+                    return (
+                        <span
+                            key={idx}
+                            className="px-3 py-1 bg-gray-100 border border-gray-300 rounded-md text-sm font-medium text-gray-400 cursor-not-allowed"
+                            dangerouslySetInnerHTML={{ __html: label }}
+                        />
+                    );
+                }
+                return (
+                    <Link
+                        key={idx}
+                        href={link.url}
+                        preserveScroll
+                        className={`px-3 py-1 border rounded-md text-sm font-medium ${
+                            link.active
+                                ? "bg-indigo-50 border-indigo-500 text-indigo-600"
+                                : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                        }`}
+                        dangerouslySetInnerHTML={{ __html: label }}
+                    />
+                );
+            })}
+        </nav>
+    );
+
     return (
         <Layout title="Daftar Admin Cabang">
             <Head title="Daftar Admin Cabang" />
 
             <div className="py-6">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                    {flash.success && (
+                        <div className="mb-4 p-4 bg-green-100 text-green-700 rounded">
+                            {flash.success}
+                        </div>
+                    )}
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-2xl font-semibold text-gray-900">Daftar Admin Cabang</h1>
                         <Link
@@ -158,28 +115,18 @@ const AdminCabangIndex = ({ adminCabangs }) => {
                                     </select>
                                 </div>
                             </div>
-                            
+
                             <Table
                                 columns={columns}
                                 data={adminCabangsData}
                                 baseRoute="/super-admin/admin-cabang"
                             />
 
-                            <div className="mt-4 flex justify-between">
+                            <div className="mt-4 flex justify-between items-center">
                                 <div className="text-sm text-gray-500">
-                                    Menampilkan {adminCabangsData.length} dari {adminCabangsData.length} admin cabang
+                                    Menampilkan {adminCabangs.from} - {adminCabangs.to} dari {adminCabangs.total} admin cabang
                                 </div>
-                                <div className="flex space-x-2">
-                                    <button className="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                        Sebelumnya
-                                    </button>
-                                    <button className="px-3 py-1 bg-indigo-50 border border-indigo-500 rounded-md text-sm font-medium text-indigo-600 hover:bg-indigo-100">
-                                        1
-                                    </button>
-                                    <button className="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                        Berikutnya
-                                    </button>
-                                </div>
+                                <Pagination links={adminCabangs.links} />
                             </div>
                         </div>
                     </div>

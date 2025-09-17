@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\SuperAdmin\AdminCabangController;
+use App\Http\Controllers\SuperAdmin\PondokController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -23,8 +25,8 @@ Route::prefix('super-admin')
         })->name('dashboard');
 
         // Pondok Routes
-        Route::resource('pondok', \App\Http\Controllers\SuperAdmin\PondokController::class);
+        Route::resource('pondok', PondokController::class);
 
         // AdminCabang Routes
-        Route::resource('admin-cabang', \App\Http\Controllers\SuperAdmin\AdminCabangController::class);
+        Route::resource('admin-cabang', AdminCabangController::class);
     });
