@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('hafalans', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('santri_id')->constrained('santris')->onDelete('cascade');
-            $table->foreignId('guru_id')->constrained('gurus')->onDelete('cascade');
-            $table->foreignId('kelas_id')->constrained('kelases')->onDelete('cascade');
+            $table->foreignId('santri_id');
+            $table->foreignId('guru_id');
+            $table->foreignId('kelas_id');
             $table->date('tanggal_setor');
             $table->integer('juz');
             $table->string('dari_surat');

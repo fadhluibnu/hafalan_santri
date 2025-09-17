@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('kelas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pondok_id')->constrained('pondoks')->onDelete('cascade');
+            $table->foreignId('pondok_id');
             $table->string('nama');
-            $table->foreignId('wali_kelas_id')->constrained('gurus')->onDelete('cascade');
+            $table->foreignId('wali_kelas_id');
             $table->text('keterangan')->nullable();
             $table->boolean('status')->default(true);
             $table->timestamps();
