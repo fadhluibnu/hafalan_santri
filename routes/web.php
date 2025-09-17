@@ -18,7 +18,7 @@ Route::prefix('super-admin')
     ->name('super-admin.')
     ->middleware(['auth', 'super_admin'])
     ->group(function () {
-        Route::get('/', function() {
+        Route::get('/', function () {
             return Inertia::render('SuperAdmin/Dashboard');
         })->name('dashboard');
 
