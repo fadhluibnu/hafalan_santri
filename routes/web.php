@@ -30,3 +30,52 @@ Route::prefix('super-admin')
         // AdminCabang Routes
         Route::resource('admin-cabang', AdminCabangController::class);
     });
+
+Route::prefix('admin-cabang')
+    ->name('admin-cabang.')
+    // ->middleware(['auth', 'admin_cabang'])
+    ->group(function () {
+        Route::get('/', function () {
+            return Inertia::render('AdminCabang/Dashboard');
+        })->name('dashboard');
+        Route::get('/santri', function () {
+            return Inertia::render('AdminCabang/Santri/Index');
+        })->name('santri.index');
+        Route::get('/santri/create', function () {
+            return Inertia::render('AdminCabang/Santri/Create');
+        })->name('santri.create');
+        Route::get('/santri/{id}/edit', function ($id) {
+            return Inertia::render('AdminCabang/Santri/Edit', ['id' => $id]);
+        })->name('santri.edit');
+        Route::get('/guru', function () {
+            return Inertia::render('AdminCabang/Guru/Index');
+        })->name('guru.index');
+        Route::get('/guru/create', function () {
+            return Inertia::render('AdminCabang/Guru/Create');
+        })->name('guru.create');
+        Route::get('/guru/{id}/edit', function ($id) {
+            return Inertia::render('AdminCabang/Guru/Edit', ['id' => $id]);
+        })->name('guru.edit');
+        Route::prefix('struktur/kelas')->name('struktur.kelas.')->group(function () {
+            Route::get('/', function () {
+                return Inertia::render('AdminCabang/Struktur/kelas/Index');
+            })->name('index');
+
+            Route::get('/create', function () {
+                return Inertia::render('AdminCabang/Struktur/kelas/Create');
+            })->name('create');
+
+            Route::get('/{id}', function ($id) {
+                // Optionally pass dummy data as props, for now the React page has its own fallback
+                return Inertia::render('AdminCabang/Struktur/kelas/Show', [
+                    // 'kelas' => ['id' => (int)$id, 'nama' => 'Kelas Tahfidz A', 'tingkat' => 'Juz 30', 'waliKelas' => 'Ustadz Rahman', 'kapasitas' => 25, 'keterangan' => '...']
+                ]);
+            })->name('show');
+
+            Route::get('/{id}/edit', function ($id) {
+                return Inertia::render('AdminCabang/Struktur/kelas/Edit', [
+                    // 'kelas' => ['id' => (int)$id, 'nama' => 'Kelas Tahfidz A', 'tingkat' => 'Juz 30', 'waliKelas' => 'Ustadz Rahman', 'kapasitas' => 25, 'keterangan' => '...']
+                ]);
+            })->name('edit');
+        });
+    });
