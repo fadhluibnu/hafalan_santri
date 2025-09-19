@@ -60,7 +60,7 @@ const GuruShow = ({ guru }) => {
                         
                         <div>
                             <dt className="text-sm font-medium text-gray-500">Status Menikah</dt>
-                            <dd className="mt-1 text-sm text-gray-900">{guru.status_menikah ? 'Sudah Menikah' : 'Belum Menikah'}</dd>
+                            <dd className="mt-1 text-sm text-gray-900">{guru.status_menikah == true ? 'Sudah Menikah' : 'Belum Menikah'}</dd>
                         </div>
                         
                         <div className="md:col-span-2">
@@ -103,7 +103,7 @@ const GuruShow = ({ guru }) => {
                             <dt className="text-sm font-medium text-gray-500">Status</dt>
                             <dd className="mt-1 text-sm text-gray-900">
                                 <span className={`px-2 py-1 rounded-full text-xs ${guru.non_aktif ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
-                                    {guru.non_aktif ? 'Non-Aktif' : 'Aktif'}
+                                    {guru.non_aktif == 0 ? 'Aktif' : 'Non-Aktif'}
                                 </span>
                             </dd>
                         </div>

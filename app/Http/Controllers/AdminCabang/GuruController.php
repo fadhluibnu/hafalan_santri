@@ -64,26 +64,24 @@ class GuruController extends Controller
      */
     public function store(Request $request)
     {
-
         DB::beginTransaction();
 
         try {
-
             $request->validate([
                 'nama' => 'required|string|max:255',
-                'nip' => 'nullable|string|max:50',
+                'nip' => 'required|string|max:50|unique:gurus,nip',
                 'gelar_awal' => 'nullable|string|max:50',
                 'gelar_akhir' => 'nullable|string|max:50',
-                'tempat_lahir' => 'nullable|string|max:100',
-                'tanggal_lahir' => 'nullable|date',
+                'tempat_lahir' => 'required|string|max:100',
+                'tanggal_lahir' => 'required|date',
                 'jenis_kelamin' => 'required|in:L,P',
-                'status_menikah' => 'nullable|boolean',
-                'alamat' => 'nullable|string',
-                'no_identitas' => 'nullable|string|max:50',
-                'no_telpon' => 'nullable|string|max:15',
-                'no_handphone' => 'nullable|string|max:15',
-                'email' => 'nullable|email|max:100',
-                'tanggal_kerja' => 'nullable|date',
+                'status_menikah' => 'required|boolean',
+                'alamat' => 'required|string',
+                'no_identitas' => 'required|string|max:50',
+                'no_telpon' => 'required|string|max:15',
+                'no_handphone' => 'required|string|max:15',
+                'email' => 'required|email|max:100',
+                'tanggal_kerja' => 'required|date',
                 'non_aktif' => 'boolean',
                 'keterangan' => 'nullable|string',
                 'username' => 'required|string|max:50|unique:users,username',
@@ -233,27 +231,25 @@ class GuruController extends Controller
             // Ambil user id dari guru
             $userId = $guru->user_id;
 
-            // Validasi input, gunakan sometimes agar hanya field yang dikirim yang divalidasi
             $request->validate([
-                'nama' => 'sometimes|required|string|max:255',
-                'nip' => 'sometimes|nullable|string|max:50',
-                'gelar_awal' => 'sometimes|nullable|string|max:50',
-                'gelar_akhir' => 'sometimes|nullable|string|max:50',
-                'tempat_lahir' => 'sometimes|nullable|string|max:100',
-                'tanggal_lahir' => 'sometimes|nullable|date',
-                'jenis_kelamin' => 'sometimes|required|in:L,P',
-                'status_menikah' => 'sometimes|nullable|boolean',
-                'alamat' => 'sometimes|nullable|string',
-                'no_identitas' => 'sometimes|nullable|string|max:50',
-                'no_telpon' => 'sometimes|nullable|string|max:15',
-                'no_handphone' => 'sometimes|nullable|string|max:15',
-                'email' => 'sometimes|nullable|email|max:100',
-                'tanggal_kerja' => 'sometimes|nullable|date',
-                'non_aktif' => 'sometimes|boolean',
-                'keterangan' => 'sometimes|nullable|string',
-                // Perbaiki validasi unique username dan email berdasarkan user id
-                'username' => 'sometimes|required|string|max:50|unique:users,username,' . $userId,
-                'password' => 'sometimes|nullable|string|min:8',
+                'nama' => 'required|string|max:255',
+                'nip' => 'required|string|max:50|unique:gurus,nip,' . $guru->id,
+                'gelar_awal' => 'nullable|string|max:50',
+                'gelar_akhir' => 'nullable|string|max:50',
+                'tempat_lahir' => 'required|string|max:100',
+                'tanggal_lahir' => 'required|date',
+                'jenis_kelamin' => 'required|in:L,P',
+                'status_menikah' => 'boolean',
+                'alamat' => 'required|string',
+                'no_identitas' => 'required|string|max:50',
+                'no_telpon' => 'required|string|max:15',
+                'no_handphone' => 'required|string|max:15',
+                'email' => 'required|email|max:100',
+                'tanggal_kerja' => 'required|date',
+                'non_aktif' => 'boolean',
+                'keterangan' => 'nullable|string',
+                'username' => 'required|string|max:50|unique:users,username,' . $userId,
+                'password' => 'nullable|string|min:8',
             ]);
 
             // Update data user jika ada perubahan username, email, atau password
@@ -328,3 +324,7 @@ class GuruController extends Controller
         }
     }
 }
+//             return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+//         }
+//     }
+// }

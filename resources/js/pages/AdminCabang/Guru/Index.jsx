@@ -58,7 +58,7 @@ const GuruIndex = () => {
             accessor: 'non_aktif', 
             render: (row) => (
                 <span className={`px-2 py-1 rounded-full text-xs ${row.non_aktif ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
-                    {row.non_aktif ? 'Non-Aktif' : 'Aktif'}
+                    {row.non_aktif == 1 ? 'Non-Aktif' : 'Aktif'}
                 </span>
             )
         },

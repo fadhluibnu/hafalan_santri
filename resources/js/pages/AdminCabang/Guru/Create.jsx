@@ -84,6 +84,7 @@ const GuruCreate = () => {
                                 name="nip" 
                                 value={data.nip} 
                                 onChange={onChange} 
+                                required
                                 error={errors.nip}
                             />
                             
@@ -128,6 +129,7 @@ const GuruCreate = () => {
                                 name="tempat_lahir" 
                                 value={data.tempat_lahir} 
                                 onChange={onChange} 
+                                required
                                 error={errors.tempat_lahir}
                             />
                             
@@ -137,6 +139,7 @@ const GuruCreate = () => {
                                 type="date" 
                                 value={data.tanggal_lahir} 
                                 onChange={onChange} 
+                                required
                                 error={errors.tanggal_lahir}
                             />
 
@@ -164,6 +167,7 @@ const GuruCreate = () => {
                                     type="textarea" 
                                     value={data.alamat} 
                                     onChange={onChange} 
+                                    required
                                     error={errors.alamat}
                                 />
                             </div>
@@ -178,6 +182,7 @@ const GuruCreate = () => {
                                 name="no_identitas" 
                                 value={data.no_identitas} 
                                 onChange={onChange} 
+                                required
                                 error={errors.no_identitas}
                             />
                             
@@ -186,6 +191,7 @@ const GuruCreate = () => {
                                 name="no_telpon" 
                                 value={data.no_telpon} 
                                 onChange={onChange} 
+                                required
                                 error={errors.no_telpon}
                             />
                             
@@ -194,6 +200,7 @@ const GuruCreate = () => {
                                 name="no_handphone" 
                                 value={data.no_handphone} 
                                 onChange={onChange} 
+                                required
                                 error={errors.no_handphone}
                             />
 
@@ -215,6 +222,7 @@ const GuruCreate = () => {
                                 type="email" 
                                 value={data.email} 
                                 onChange={onChange} 
+                                required
                                 error={errors.email}
                             />
                             <FormInput
@@ -238,6 +246,7 @@ const GuruCreate = () => {
                                 type="date" 
                                 value={data.tanggal_kerja} 
                                 onChange={onChange} 
+                                required
                                 error={errors.tanggal_kerja}
                             />
                             
@@ -257,7 +266,6 @@ const GuruCreate = () => {
                                     <p className="mt-1 text-sm text-red-600">{errors.non_aktif}</p>
                                 )}
                             </div>
-
                             <div className="md:col-span-2">
                                 <FormInput 
                                     label="Keterangan" 

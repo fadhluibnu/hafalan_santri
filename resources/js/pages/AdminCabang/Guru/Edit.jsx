@@ -6,6 +6,7 @@ import { route } from 'ziggy-js';
 
 const GuruEdit = ({ guru, user }) => {
     const [loading, setLoading] = useState(false);
+    console.log(guru);
 
     // Inisialisasi data form, ambil dari props guru dan user
     const { data, setData, errors, post, processing } = useForm({
@@ -17,7 +18,7 @@ const GuruEdit = ({ guru, user }) => {
         tempat_lahir: guru.tempat_lahir || '',
         tanggal_lahir: guru.tanggal_lahir || '',
         jenis_kelamin: guru.jenis_kelamin || '',
-        status_menikah: guru.status_menikah ? true : false,
+        status_menikah: guru.status_menikah == 1 ? true : false,
         alamat: guru.alamat || '',
         no_identitas: guru.no_identitas || '',
         no_telpon: guru.no_telpon || '',
@@ -27,7 +28,7 @@ const GuruEdit = ({ guru, user }) => {
         email: user?.email || '',
         password: '',
         tanggal_kerja: guru.tanggal_kerja || '',
-        non_aktif: guru.non_aktif ? true : false,
+        non_aktif: guru.non_aktif == 1 ? true : false,
         keterangan: guru.keterangan || '',
         id: guru.id,
     });
@@ -81,6 +82,7 @@ const GuruEdit = ({ guru, user }) => {
                                 name="nip" 
                                 value={data.nip} 
                                 onChange={onChange} 
+                                required
                                 error={errors.nip}
                             />
                             <FormInput 
@@ -120,6 +122,7 @@ const GuruEdit = ({ guru, user }) => {
                                 name="tempat_lahir" 
                                 value={data.tempat_lahir} 
                                 onChange={onChange} 
+                                required
                                 error={errors.tempat_lahir}
                             />
                             <FormInput 
@@ -128,6 +131,7 @@ const GuruEdit = ({ guru, user }) => {
                                 type="date" 
                                 value={data.tanggal_lahir} 
                                 onChange={onChange} 
+                                required
                                 error={errors.tanggal_lahir}
                             />
                             <div className="flex items-center mt-8">
@@ -153,6 +157,7 @@ const GuruEdit = ({ guru, user }) => {
                                     type="textarea" 
                                     value={data.alamat} 
                                     onChange={onChange} 
+                                    required
                                     error={errors.alamat}
                                 />
                             </div>
@@ -166,6 +171,7 @@ const GuruEdit = ({ guru, user }) => {
                                 name="no_identitas" 
                                 value={data.no_identitas} 
                                 onChange={onChange} 
+                                required
                                 error={errors.no_identitas}
                             />
                             <FormInput 
@@ -173,6 +179,7 @@ const GuruEdit = ({ guru, user }) => {
                                 name="no_telpon" 
                                 value={data.no_telpon} 
                                 onChange={onChange} 
+                                required
                                 error={errors.no_telpon}
                             />
                             <FormInput 
@@ -180,6 +187,7 @@ const GuruEdit = ({ guru, user }) => {
                                 name="no_handphone" 
                                 value={data.no_handphone} 
                                 onChange={onChange} 
+                                required
                                 error={errors.no_handphone}
                             />
 
@@ -201,6 +209,7 @@ const GuruEdit = ({ guru, user }) => {
                                 type="email" 
                                 value={data.email} 
                                 onChange={onChange} 
+                                required
                                 error={errors.email}
                             />
                             <FormInput
@@ -222,6 +231,7 @@ const GuruEdit = ({ guru, user }) => {
                                 type="date" 
                                 value={data.tanggal_kerja} 
                                 onChange={onChange} 
+                                required
                                 error={errors.tanggal_kerja}
                             />
                             <div className="flex items-center mt-8">
