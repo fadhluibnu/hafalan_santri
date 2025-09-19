@@ -187,8 +187,17 @@ class GuruController extends Controller
                     ->withErrors(['error' => 'Data guru tidak ditemukan.']);
             }
 
+            $user = User::find($guru->user_id);
+            if (!$user) {
+                throw new \Exception('User untuk guru ini tidak ditemukan.');
+            }
+
             return Inertia::render('AdminCabang/Guru/Edit', [
                 'guru' => $guru,
+                'user' => [
+                    'username' => $user->username,
+                    'email' => $user->email,
+                ],
             ]);
         } catch (\Exception $e) {
             return redirect()->route('admin-cabang.guru.index')
@@ -201,25 +210,6 @@ class GuruController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $request->validate([
-            'nama' => 'required|string|max:255',
-            'nip' => 'nullable|string|max:50',
-            'gelar_awal' => 'nullable|string|max:50',
-            'gelar_akhir' => 'nullable|string|max:50',
-            'tempat_lahir' => 'nullable|string|max:100',
-            'tanggal_lahir' => 'nullable|date',
-            'jenis_kelamin' => 'required|in:L,P',
-            'status_menikah' => 'nullable|boolean',
-            'alamat' => 'nullable|string',
-            'no_identitas' => 'nullable|string|max:50',
-            'no_telpon' => 'nullable|string|max:15',
-            'no_handphone' => 'nullable|string|max:15',
-            'email' => 'nullable|email|max:100',
-            'tanggal_kerja' => 'nullable|date',
-            'non_aktif' => 'boolean',
-            'keterangan' => 'nullable|string',
-        ]);
-
         try {
             DB::beginTransaction();
 
@@ -240,8 +230,55 @@ class GuruController extends Controller
                     ->withErrors(['error' => 'Data guru tidak ditemukan.']);
             }
 
-            // Update data guru
-            $guru->update($request->all());
+            // Ambil user id dari guru
+            $userId = $guru->user_id;
+
+            // Validasi input, gunakan sometimes agar hanya field yang dikirim yang divalidasi
+            $request->validate([
+                'nama' => 'sometimes|required|string|max:255',
+                'nip' => 'sometimes|nullable|string|max:50',
+                'gelar_awal' => 'sometimes|nullable|string|max:50',
+                'gelar_akhir' => 'sometimes|nullable|string|max:50',
+                'tempat_lahir' => 'sometimes|nullable|string|max:100',
+                'tanggal_lahir' => 'sometimes|nullable|date',
+                'jenis_kelamin' => 'sometimes|required|in:L,P',
+                'status_menikah' => 'sometimes|nullable|boolean',
+                'alamat' => 'sometimes|nullable|string',
+                'no_identitas' => 'sometimes|nullable|string|max:50',
+                'no_telpon' => 'sometimes|nullable|string|max:15',
+                'no_handphone' => 'sometimes|nullable|string|max:15',
+                'email' => 'sometimes|nullable|email|max:100',
+                'tanggal_kerja' => 'sometimes|nullable|date',
+                'non_aktif' => 'sometimes|boolean',
+                'keterangan' => 'sometimes|nullable|string',
+                // Perbaiki validasi unique username dan email berdasarkan user id
+                'username' => 'sometimes|required|string|max:50|unique:users,username,' . $userId,
+                'password' => 'sometimes|nullable|string|min:8',
+            ]);
+
+            // Update data user jika ada perubahan username, email, atau password
+            if ($guru->user_id) {
+                $user = User::find($guru->user_id);
+                if ($user) {
+                    $userData = [];
+                    if ($request->has('username')) {
+                        $userData['username'] = $request->username;
+                    }
+                    if ($request->has('email')) {
+                        $userData['email'] = $request->email;
+                    }
+                    if ($request->filled('password')) {
+                        $userData['password'] = Hash::make($request->password);
+                    }
+                    if (!empty($userData)) {
+                        $user->update($userData);
+                    }
+                }
+            }
+
+            // Update data guru, kecualikan username & password
+            $guruData = $request->except(['username', 'password']);
+            $guru->update($guruData);
 
             DB::commit();
 

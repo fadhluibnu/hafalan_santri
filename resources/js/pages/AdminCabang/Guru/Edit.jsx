@@ -2,13 +2,34 @@ import { Link, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import FormInput from '../components/FormInput';
 import Layout from '../components/Layout';
+import { route } from 'ziggy-js';
 
-const GuruEdit = ({ guru }) => {
+const GuruEdit = ({ guru, user }) => {
     const [loading, setLoading] = useState(false);
-    
+
+    // Inisialisasi data form, ambil dari props guru dan user
     const { data, setData, errors, post, processing } = useForm({
         _method: 'PUT',
-        ...guru
+        nip: guru.nip || '',
+        nama: guru.nama || '',
+        gelar_awal: guru.gelar_awal || '',
+        gelar_akhir: guru.gelar_akhir || '',
+        tempat_lahir: guru.tempat_lahir || '',
+        tanggal_lahir: guru.tanggal_lahir || '',
+        jenis_kelamin: guru.jenis_kelamin || '',
+        status_menikah: guru.status_menikah ? true : false,
+        alamat: guru.alamat || '',
+        no_identitas: guru.no_identitas || '',
+        no_telpon: guru.no_telpon || '',
+        no_handphone: guru.no_handphone || '',
+        // Data akun
+        username: user?.username || '',
+        email: user?.email || '',
+        password: '',
+        tanggal_kerja: guru.tanggal_kerja || '',
+        non_aktif: guru.non_aktif ? true : false,
+        keterangan: guru.keterangan || '',
+        id: guru.id,
     });
 
     const onChange = (e) => {
@@ -19,15 +40,9 @@ const GuruEdit = ({ guru }) => {
     const onSubmit = (e) => {
         e.preventDefault();
         setLoading(true);
-        
-        post(`/admin-cabang/guru/${guru.id}`, {
-            onSuccess: () => {
-                setLoading(false);
-                router.visit('/admin-cabang/guru');
-            },
-            onError: () => {
-                setLoading(false);
-            }
+        post(route('admin-cabang.guru.update', guru.id), {
+            onSuccess: () => setLoading(false),
+            onError: () => setLoading(false),
         });
     };
 
@@ -40,6 +55,11 @@ const GuruEdit = ({ guru }) => {
         <Layout title={`Edit Guru - ${data.nama}`}>
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
+                    {errors.error && (
+                        <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">
+                            {errors.error}
+                        </div>
+                    )}
                     <h2 className="text-lg font-semibold text-gray-700">Form Edit Guru</h2>
                     <Link
                         href={`/admin-cabang/guru/${data.id}`}
@@ -56,7 +76,6 @@ const GuruEdit = ({ guru }) => {
                             <div className="md:col-span-2">
                                 <h3 className="text-md font-semibold text-gray-700 border-b pb-2 mb-2">Data Pribadi</h3>
                             </div>
-
                             <FormInput 
                                 label="NIP" 
                                 name="nip" 
@@ -64,7 +83,6 @@ const GuruEdit = ({ guru }) => {
                                 onChange={onChange} 
                                 error={errors.nip}
                             />
-                            
                             <FormInput 
                                 label="Nama Lengkap" 
                                 name="nama" 
@@ -73,7 +91,6 @@ const GuruEdit = ({ guru }) => {
                                 required 
                                 error={errors.nama}
                             />
-
                             <FormInput 
                                 label="Gelar Awal" 
                                 name="gelar_awal" 
@@ -81,7 +98,6 @@ const GuruEdit = ({ guru }) => {
                                 onChange={onChange} 
                                 error={errors.gelar_awal}
                             />
-                            
                             <FormInput 
                                 label="Gelar Akhir" 
                                 name="gelar_akhir" 
@@ -89,7 +105,6 @@ const GuruEdit = ({ guru }) => {
                                 onChange={onChange} 
                                 error={errors.gelar_akhir}
                             />
-
                             <FormInput
                                 label="Jenis Kelamin"
                                 name="jenis_kelamin"
@@ -100,7 +115,6 @@ const GuruEdit = ({ guru }) => {
                                 required
                                 error={errors.jenis_kelamin}
                             />
-                            
                             <FormInput 
                                 label="Tempat Lahir" 
                                 name="tempat_lahir" 
@@ -108,7 +122,6 @@ const GuruEdit = ({ guru }) => {
                                 onChange={onChange} 
                                 error={errors.tempat_lahir}
                             />
-                            
                             <FormInput 
                                 label="Tanggal Lahir" 
                                 name="tanggal_lahir" 
@@ -117,13 +130,12 @@ const GuruEdit = ({ guru }) => {
                                 onChange={onChange} 
                                 error={errors.tanggal_lahir}
                             />
-                            
                             <div className="flex items-center mt-8">
                                 <input
                                     id="status_menikah"
                                     name="status_menikah"
                                     type="checkbox"
-                                    checked={data.status_menikah}
+                                    checked={!!data.status_menikah}
                                     onChange={onChange}
                                     className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                                 />
@@ -134,7 +146,6 @@ const GuruEdit = ({ guru }) => {
                                     <p className="mt-1 text-sm text-red-600">{errors.status_menikah}</p>
                                 )}
                             </div>
-                            
                             <div className="md:col-span-2">
                                 <FormInput 
                                     label="Alamat" 
@@ -150,7 +161,6 @@ const GuruEdit = ({ guru }) => {
                             <div className="md:col-span-2">
                                 <h3 className="text-md font-semibold text-gray-700 border-b pb-2 mb-2 mt-4">Data Kontak</h3>
                             </div>
-
                             <FormInput 
                                 label="No Identitas" 
                                 name="no_identitas" 
@@ -158,7 +168,6 @@ const GuruEdit = ({ guru }) => {
                                 onChange={onChange} 
                                 error={errors.no_identitas}
                             />
-                            
                             <FormInput 
                                 label="No Telepon" 
                                 name="no_telpon" 
@@ -166,7 +175,6 @@ const GuruEdit = ({ guru }) => {
                                 onChange={onChange} 
                                 error={errors.no_telpon}
                             />
-                            
                             <FormInput 
                                 label="No Handphone" 
                                 name="no_handphone" 
@@ -174,7 +182,19 @@ const GuruEdit = ({ guru }) => {
                                 onChange={onChange} 
                                 error={errors.no_handphone}
                             />
-                            
+
+                            {/* Data Akun */}
+                            <div className="md:col-span-2">
+                                <h3 className="text-md font-semibold text-gray-700 border-b pb-2 mb-2 mt-4">Data Akun</h3>
+                            </div>
+                            <FormInput
+                                label="Username"
+                                name="username"
+                                value={data.username}
+                                onChange={onChange}
+                                required
+                                error={errors.username}
+                            />
                             <FormInput 
                                 label="Email" 
                                 name="email" 
@@ -183,12 +203,19 @@ const GuruEdit = ({ guru }) => {
                                 onChange={onChange} 
                                 error={errors.email}
                             />
+                            <FormInput
+                                label="Password (Kosongkan jika tidak ingin mengubah)"
+                                name="password"
+                                type="password"
+                                value={data.password}
+                                onChange={onChange}
+                                error={errors.password}
+                            />
 
                             {/* Data Pekerjaan */}
                             <div className="md:col-span-2">
                                 <h3 className="text-md font-semibold text-gray-700 border-b pb-2 mb-2 mt-4">Data Pekerjaan</h3>
                             </div>
-
                             <FormInput 
                                 label="Tanggal Mulai Kerja" 
                                 name="tanggal_kerja" 
@@ -197,13 +224,12 @@ const GuruEdit = ({ guru }) => {
                                 onChange={onChange} 
                                 error={errors.tanggal_kerja}
                             />
-                            
                             <div className="flex items-center mt-8">
                                 <input
                                     id="non_aktif"
                                     name="non_aktif"
                                     type="checkbox"
-                                    checked={data.non_aktif}
+                                    checked={!!data.non_aktif}
                                     onChange={onChange}
                                     className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                                 />
@@ -214,7 +240,6 @@ const GuruEdit = ({ guru }) => {
                                     <p className="mt-1 text-sm text-red-600">{errors.non_aktif}</p>
                                 )}
                             </div>
-
                             <div className="md:col-span-2">
                                 <FormInput 
                                     label="Keterangan" 
