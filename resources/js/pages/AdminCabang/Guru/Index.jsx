@@ -9,7 +9,7 @@ const GuruIndex = () => {
     const { gurus, flash } = usePage().props;
     const [keyword, setKeyword] = useState('');
     const [alertVisible, setAlertVisible] = useState(!!flash?.success || !!flash?.error);
-    
+
     // Format tanggal untuk tampilan
     const formatDate = (dateString) => {
         if (!dateString) return '-';
@@ -21,15 +21,19 @@ const GuruIndex = () => {
         }).format(date);
     };
 
+    // Data paginated
+    const gurusData = gurus.data;
+
+    // Filter hanya pada data halaman saat ini
     const filtered = useMemo(() => {
-        if (!gurus) return [];
+        if (!gurusData) return [];
         const q = keyword.toLowerCase();
-        return gurus.filter((d) => 
+        return gurusData.filter((d) => 
             d.nama?.toLowerCase().includes(q) || 
             d.nip?.toLowerCase().includes(q) || 
             d.email?.toLowerCase().includes(q)
         );
-    }, [gurus, keyword]);
+    }, [gurusData, keyword]);
 
     const handleDelete = (id) => {
         if (!confirm('Yakin ingin menghapus guru ini?')) return;
@@ -140,6 +144,45 @@ const GuruIndex = () => {
                             </p>
                         </div>
                     )}
+
+                    {/* Pagination */}
+                    <div className="mt-4 flex justify-between items-center">
+                        <div className="text-sm text-gray-500">
+                            Menampilkan {gurus.from} sampai {gurus.to} dari {gurus.total} guru
+                        </div>
+                        <div className="flex space-x-2">
+                            {gurus.links.map((link, idx) => {
+                                // Remove html entities from label for Previous/Next
+                                const label = link.label.replace(/&laquo;|&raquo;|<[^>]+>/g, match => {
+                                    if (match === "&laquo;") return "«";
+                                    if (match === "&raquo;") return "»";
+                                    return "";
+                                }).trim() || link.label;
+
+                                return link.url ? (
+                                    <Link
+                                        key={idx}
+                                        href={link.url}
+                                        preserveScroll
+                                        className={`px-3 py-1 border rounded-md text-sm font-medium ${link.active
+                                                ? "bg-indigo-50 border-indigo-500 text-indigo-600"
+                                                : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                                            }`}
+                                        disabled={link.url === null}
+                                    >
+                                        {label}
+                                    </Link>
+                                ) : (
+                                    <span
+                                        key={idx}
+                                        className="px-3 py-1 border border-gray-200 rounded-md text-sm font-medium text-gray-400 cursor-not-allowed"
+                                    >
+                                        {label}
+                                    </span>
+                                );
+                            })}
+                        </div>
+                    </div>
                 </div>
             </div>
         </Layout>

@@ -40,7 +40,8 @@ class GuruController extends Controller
                     'tanggal_kerja',
                     'non_aktif'
                 ])
-                ->get();
+                ->orderBy('nama')
+                ->paginate(10);
 
             return Inertia::render('AdminCabang/Guru/Index', [
                 'gurus' => $gurus,
