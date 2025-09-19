@@ -8,7 +8,7 @@ const Table = ({ columns, data, actions = true, baseRoute = "" }) => {
     const safeData = Array.isArray(data) ? data : [];
 
     const deleteData = (id) => {
-        router.delete(route(`super-admin.pondok.destroy`, id), {  preserveScroll: true});
+        router.delete(route(`super-admin.admin-cabang.destroy`, id), {  preserveScroll: true});
     }
     return (
         <div className="overflow-x-auto relative shadow-md sm:rounded-lg">
