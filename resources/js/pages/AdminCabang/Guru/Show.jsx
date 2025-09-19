@@ -1,70 +1,138 @@
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
+import { useState } from 'react';
 import Layout from '../components/Layout';
 
 const GuruShow = ({ guru }) => {
-    const data = guru || {
-        id: 1,
-        nip: '1234567890',
-        nama: 'Ustadz Rahman',
-        gelar_awal: 'S.Pd',
-        gelar_akhir: '',
-        tempat_lahir: 'Bandung',
-        tanggal_lahir: '1988-02-01',
-        jenis_kelamin: 'L',
-        status_menikah: 'Menikah',
-        alamat: 'Jl. Contoh No.1',
-        no_identitas: '3210...',
-        no_telpon: '022-123456',
-        no_handphone: '08123456789',
-        email: 'rahman@example.com',
-        tanggal_kerja: '2015-07-01',
-        non_aktif: false,
-        keterangan: 'Guru senior',
-        pondok_id: 1,
-        user_id: 1,
+    const [deleting, setDeleting] = useState(false);
+    
+    const formatDate = (dateString) => {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        return new Intl.DateTimeFormat('id-ID', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        }).format(date);
+    };
+    
+    const handleDelete = () => {
+        if (!confirm('Yakin ingin menghapus guru ini?')) return;
+        
+        setDeleting(true);
+        router.delete(`/admin-cabang/guru/${guru.id}`, {
+            onFinish: () => setDeleting(false)
+        });
     };
 
     const labelJK = (v) => (v === 'L' ? 'Laki-laki' : v === 'P' ? 'Perempuan' : '-');
 
     return (
-        <Layout title={`Detail Guru - ${data.nama}`}>
+        <Layout title={`Detail Guru - ${guru.nama}`}>
             <div className="space-y-4">
                 <div className="rounded-lg bg-white p-6 shadow-md">
-                    <dl className="divide-y divide-gray-200">
-                        {[
-                            ['NIP', data.nip || '-'],
-                            ['Nama', data.nama || '-'],
-                            ['Gelar Awal', data.gelar_awal || '-'],
-                            ['Gelar Akhir', data.gelar_akhir || '-'],
-                            ['Tempat, Tanggal Lahir', `${data.tempat_lahir || '-'}, ${data.tanggal_lahir || '-'}`],
-                            ['Jenis Kelamin', labelJK(data.jenis_kelamin)],
-                            ['Status Menikah', data.status_menikah || '-'],
-                            ['Alamat', data.alamat || '-'],
-                            ['No Identitas', data.no_identitas || '-'],
-                            ['No Telepon', data.no_telpon || '-'],
-                            ['No Handphone', data.no_handphone || '-'],
-                            ['Email', data.email || '-'],
-                            ['Tanggal Mulai Kerja', data.tanggal_kerja || '-'],
-                            ['Non Aktif', data.non_aktif ? 'Ya' : 'Tidak'],
-                            ['Keterangan', data.keterangan || '-'],
-                            ['Pondok ID', data.pondok_id ?? '-'],
-                            ['User ID', data.user_id ?? '-'],
-                        ].map(([label, value]) => (
-                            <div key={label} className="grid grid-cols-3 gap-4 py-3">
-                                <dt className="text-sm font-medium text-gray-500">{label}</dt>
-                                <dd className="col-span-2 text-sm text-gray-900">{value}</dd>
-                            </div>
-                        ))}
+                    <h3 className="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">Data Pribadi</h3>
+                    <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+                        <div>
+                            <dt className="text-sm font-medium text-gray-500">Nama Lengkap</dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                                {(guru.gelar_awal ? guru.gelar_awal + ' ' : '') + 
+                                 guru.nama + 
+                                 (guru.gelar_akhir ? ', ' + guru.gelar_akhir : '')}
+                            </dd>
+                        </div>
+                        
+                        <div>
+                            <dt className="text-sm font-medium text-gray-500">NIP</dt>
+                            <dd className="mt-1 text-sm text-gray-900">{guru.nip || '-'}</dd>
+                        </div>
+                        
+                        <div>
+                            <dt className="text-sm font-medium text-gray-500">Tempat, Tanggal Lahir</dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                                {guru.tempat_lahir || '-'}, {formatDate(guru.tanggal_lahir)}
+                            </dd>
+                        </div>
+                        
+                        <div>
+                            <dt className="text-sm font-medium text-gray-500">Jenis Kelamin</dt>
+                            <dd className="mt-1 text-sm text-gray-900">{labelJK(guru.jenis_kelamin)}</dd>
+                        </div>
+                        
+                        <div>
+                            <dt className="text-sm font-medium text-gray-500">Status Menikah</dt>
+                            <dd className="mt-1 text-sm text-gray-900">{guru.status_menikah ? 'Sudah Menikah' : 'Belum Menikah'}</dd>
+                        </div>
+                        
+                        <div className="md:col-span-2">
+                            <dt className="text-sm font-medium text-gray-500">Alamat</dt>
+                            <dd className="mt-1 text-sm text-gray-900">{guru.alamat || '-'}</dd>
+                        </div>
+                    </dl>
+                    
+                    <h3 className="text-lg font-semibold text-gray-800 border-b pb-2 mb-4 mt-6">Data Kontak</h3>
+                    <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+                        <div>
+                            <dt className="text-sm font-medium text-gray-500">No. Identitas</dt>
+                            <dd className="mt-1 text-sm text-gray-900">{guru.no_identitas || '-'}</dd>
+                        </div>
+                        
+                        <div>
+                            <dt className="text-sm font-medium text-gray-500">No. Telepon</dt>
+                            <dd className="mt-1 text-sm text-gray-900">{guru.no_telpon || '-'}</dd>
+                        </div>
+                        
+                        <div>
+                            <dt className="text-sm font-medium text-gray-500">No. Handphone</dt>
+                            <dd className="mt-1 text-sm text-gray-900">{guru.no_handphone || '-'}</dd>
+                        </div>
+                        
+                        <div>
+                            <dt className="text-sm font-medium text-gray-500">Email</dt>
+                            <dd className="mt-1 text-sm text-gray-900">{guru.email || '-'}</dd>
+                        </div>
+                    </dl>
+                    
+                    <h3 className="text-lg font-semibold text-gray-800 border-b pb-2 mb-4 mt-6">Data Pekerjaan</h3>
+                    <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+                        <div>
+                            <dt className="text-sm font-medium text-gray-500">Tanggal Mulai Kerja</dt>
+                            <dd className="mt-1 text-sm text-gray-900">{formatDate(guru.tanggal_kerja)}</dd>
+                        </div>
+                        
+                        <div>
+                            <dt className="text-sm font-medium text-gray-500">Status</dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                                <span className={`px-2 py-1 rounded-full text-xs ${guru.non_aktif ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                                    {guru.non_aktif ? 'Non-Aktif' : 'Aktif'}
+                                </span>
+                            </dd>
+                        </div>
+                        
+                        <div className="md:col-span-2">
+                            <dt className="text-sm font-medium text-gray-500">Keterangan</dt>
+                            <dd className="mt-1 text-sm text-gray-900">{guru.keterangan || '-'}</dd>
+                        </div>
                     </dl>
                 </div>
 
                 <div className="flex items-center justify-end space-x-3">
+                    <button
+                        onClick={handleDelete}
+                        disabled={deleting}
+                        className={`rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-red-700 ${
+                            deleting ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                    >
+                        {deleting ? 'Menghapus...' : 'Hapus'}
+                    </button>
+                    
                     <Link
-                        href={`/admin-cabang/guru/${data.id}/edit`}
+                        href={`/admin-cabang/guru/${guru.id}/edit`}
                         className="rounded-md bg-yellow-500 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-yellow-600"
                     >
                         Edit
                     </Link>
+                    
                     <Link
                         href="/admin-cabang/guru"
                         className="rounded-md border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
