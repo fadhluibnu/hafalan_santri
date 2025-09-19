@@ -1,7 +1,7 @@
 import { Link } from '@inertiajs/react';
 import Layout from '../../components/Layout';
 
-const KelasShow = ({ kelas }) => {
+const KelasShow = ({ kelas, santri: santriProp = [] }) => {
     // Dummy detail
     const data = kelas || {
         id: 1,
@@ -11,6 +11,18 @@ const KelasShow = ({ kelas }) => {
         kapasitas: 25,
         keterangan: 'Keterangan kelas...',
     };
+
+    // Dummy santri list if none provided via props
+    const santriList =
+        Array.isArray(santriProp) && santriProp.length > 0
+            ? santriProp
+            : [
+                  { id: 1, nis: 'S001', nama: 'Ahmad Zaki', jenis_kelamin: 'L', juzTerakhir: 'Juz 30' },
+                  { id: 2, nis: 'S002', nama: 'Budi Santoso', jenis_kelamin: 'L', juzTerakhir: 'Juz 29' },
+                  { id: 3, nis: 'S003', nama: 'Citra Ayu', jenis_kelamin: 'P', juzTerakhir: 'Juz 28' },
+              ];
+
+    const labelJK = (v) => (v === 'L' ? 'Laki-laki' : v === 'P' ? 'Perempuan' : '-');
 
     return (
         <Layout title={`Detail Kelas - ${data.nama}`}>
@@ -40,7 +52,52 @@ const KelasShow = ({ kelas }) => {
                     </dl>
                 </div>
 
+                {/* Santri list in this class */}
+                <div className="rounded-lg bg-white p-4 shadow-md">
+                    <div className="mb-3 flex items-center justify-between">
+                        <h3 className="text-base font-semibold text-gray-700">Santri di Kelas ini</h3>
+                        <span className="text-sm text-gray-500">Total: {santriList.length}</span>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full text-sm text-gray-700">
+                            <thead className="bg-gray-50 text-xs text-gray-600 uppercase">
+                                <tr>
+                                    <th className="px-4 py-3 text-left">No</th>
+                                    <th className="px-4 py-3 text-left">NIS</th>
+                                    <th className="px-4 py-3 text-left">Nama</th>
+                                    <th className="px-4 py-3 text-left">Jenis Kelamin</th>
+                                    <th className="px-4 py-3 text-left">Juz Terakhir</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {santriList.map((s, idx) => (
+                                    <tr key={s.id} className="border-b">
+                                        <td className="px-4 py-2">{idx + 1}</td>
+                                        <td className="px-4 py-2">{s.nis || '-'}</td>
+                                        <td className="px-4 py-2">{s.nama || '-'}</td>
+                                        <td className="px-4 py-2">{labelJK(s.jenis_kelamin)}</td>
+                                        <td className="px-4 py-2">{s.juzTerakhir || '-'}</td>
+                                    </tr>
+                                ))}
+                                {santriList.length === 0 && (
+                                    <tr>
+                                        <td className="px-4 py-6 text-center text-gray-500" colSpan={5}>
+                                            Belum ada santri dalam kelas ini
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <div className="flex items-center justify-end space-x-3">
+                    <Link
+                        href={`/admin-cabang/struktur/kelas/${data.id}/santri`}
+                        className="rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-green-700"
+                    >
+                        Tempatkan Santri
+                    </Link>
                     <Link
                         href={`/admin-cabang/struktur/kelas/${data.id}/edit`}
                         className="rounded-md bg-yellow-500 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-yellow-600"

@@ -9,8 +9,8 @@ const KelasIndex = () => {
 
     const dummyData = useMemo(
         () => [
-            { id: 1, nama: 'Kelas Tahfidz A', tingkat: 'Juz 30', waliKelas: 'Ustadz Rahman', kapasitas: 25 },
-            { id: 2, nama: 'Kelas Tahfidz B', tingkat: 'Juz 29', waliKelas: 'Ustadzah Salma', kapasitas: 20 },
+            { id: 1, nama: 'Kelas Tahfidz A', tingkat: 'Juz 30', waliKelas: 'Ustadz Rahman', kapasitas: 25, terisi: 18 },
+            { id: 2, nama: 'Kelas Tahfidz B', tingkat: 'Juz 29', waliKelas: 'Ustadzah Salma', kapasitas: 20, terisi: 12 },
         ],
         [],
     );
@@ -28,6 +28,27 @@ const KelasIndex = () => {
         { header: 'Tingkat', accessor: 'tingkat' },
         { header: 'Wali Kelas', accessor: 'waliKelas' },
         { header: 'Kapasitas', accessor: 'kapasitas' },
+        {
+            header: 'Terisi',
+            accessor: 'terisi',
+            render: (row) => (
+                <span className="inline-flex min-w-[72px] items-center justify-center rounded bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
+                    {row.terisi ?? 0}/{row.kapasitas}
+                </span>
+            ),
+        },
+        {
+            header: 'Penempatan',
+            accessor: 'penempatan',
+            render: (row) => (
+                <Link
+                    href={`/admin-cabang/struktur/kelas/${row.id}/santri`}
+                    className="inline-flex items-center rounded-md bg-green-600 px-3 py-1.5 text-xs font-semibold text-white shadow hover:bg-green-700"
+                >
+                    Tempatkan Santri
+                </Link>
+            ),
+        },
     ];
 
     return (

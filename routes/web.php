@@ -47,6 +47,13 @@ Route::prefix('admin-cabang')
         Route::get('/santri/{id}/edit', function ($id) {
             return Inertia::render('AdminCabang/Santri/Edit', ['id' => $id]);
         })->name('santri.edit');
+        Route::get('/santri/{id}', function ($id) {
+            return Inertia::render('AdminCabang/Santri/Show', ['id' => $id]);
+        })->name('santri.show');
+        Route::delete('/santri/{id}', function ($id) {
+            // Dummy delete handler - replace with controller when backend ready
+            return back()->with('success', 'Santri deleted (dummy)');
+        })->name('santri.destroy');
         Route::get('/guru', function () {
             return Inertia::render('AdminCabang/Guru/Index');
         })->name('guru.index');
@@ -56,6 +63,13 @@ Route::prefix('admin-cabang')
         Route::get('/guru/{id}/edit', function ($id) {
             return Inertia::render('AdminCabang/Guru/Edit', ['id' => $id]);
         })->name('guru.edit');
+        Route::get('/guru/{id}', function ($id) {
+            return Inertia::render('AdminCabang/Guru/Show', ['id' => $id]);
+        })->name('guru.show');
+        Route::delete('/guru/{id}', function ($id) {
+            // Dummy delete handler - replace with controller when backend ready
+            return back()->with('success', 'Guru deleted (dummy)');
+        })->name('guru.destroy');
         Route::prefix('struktur/kelas')->name('struktur.kelas.')->group(function () {
             Route::get('/', function () {
                 return Inertia::render('AdminCabang/Struktur/kelas/Index');
@@ -77,5 +91,20 @@ Route::prefix('admin-cabang')
                     // 'kelas' => ['id' => (int)$id, 'nama' => 'Kelas Tahfidz A', 'tingkat' => 'Juz 30', 'waliKelas' => 'Ustadz Rahman', 'kapasitas' => 25, 'keterangan' => '...']
                 ]);
             })->name('edit');
+            Route::get('/{id}/santri', function ($id) {
+                return Inertia::render('AdminCabang/Struktur/kelas/ManageSantri', [
+                    // 'kelas' => ['id' => (int)$id, 'nama' => 'Kelas Tahfidz A', 'tingkat' => 'Juz 30', 'waliKelas' => 'Ustadz Rahman', 'kapasitas' => 25, 'keterangan' => '...']
+                ]);
+            })->name('manage_santri');
+            Route::post('/{id}/santri', function ($id) {
+                // Expect payload: santri_ids: array
+                // For now, just bounce back with a success message
+                return back()->with('success', 'Penempatan santri disimpan (dummy)');
+            })->name('manage_santri.store');
+
+            Route::delete('/{id}', function ($id) {
+                // Dummy destroy kelas
+                return back()->with('success', 'Kelas dihapus (dummy)');
+            })->name('destroy');
         });
     });
