@@ -33,7 +33,7 @@ Route::prefix('super-admin')
 
 Route::prefix('admin-cabang')
     ->name('admin-cabang.')
-    // ->middleware(['auth', 'admin_cabang'])
+    ->middleware(['auth', 'admin_cabang'])
     ->group(function () {
         Route::get('/', function () {
             return Inertia::render('AdminCabang/Dashboard');
