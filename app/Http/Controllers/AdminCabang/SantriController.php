@@ -21,19 +21,15 @@ class SantriController extends Controller
      */
     public function index()
     {
-        // Ambil data penting saja
-        $santris = Santri::with('kelas:id,nama') // pastikan relasi 'kelas' ada di model
-            ->select('id', 'nama', 'kelas_id')
-            ->get()
-            ->map(function ($santri) {
-                return [
-                    'id' => $santri->id,
-                    'nama' => $santri->nama,
-                    'kelas' => $santri->kelas ? $santri->kelas->nama : '-',
-                    'totalJuz' => 0, // Placeholder, ganti jika ada field/relasi total juz sah
-                ];
-            });
+        // Ambil data penting saja, termasuk total juz sah dan foto, dengan pagination
+        $santris = Santri::with(['kelas:id,nama', 'jus' => function($q) {
+            $q->where('status', 'sah');
+        }])
+            ->select('id', 'nama', 'kelas_id', 'foto')
+            ->orderBy('nama')
+            ->paginate(10);
 
+        // Tidak perlu transform, langsung kirim ke frontend
         return Inertia::render('AdminCabang/Santri/Index', [
             'santris' => $santris,
         ]);

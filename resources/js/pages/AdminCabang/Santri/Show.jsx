@@ -86,7 +86,28 @@ const SantriShow = ({ santri }) => {
     return (
         <Layout title={`Detail Santri - ${data.nama}`}>
             <div className="space-y-4">
+                {/* Tombol Kembali di bagian atas */}
+                <div className="flex items-center justify-between mb-4">
+                    <Link
+                        href={route('admin-cabang.santri.index')}
+                        className="rounded-md border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                    >
+                        Kembali
+                    </Link>
+                    <div />
+                </div>
                 <div className="rounded-lg bg-white p-6 shadow-md">
+                    {/* Foto Santri */}
+                    {data.foto && (
+                        <div className="flex justify-center mb-6">
+                            <img
+                                src={`/storage/${data.foto}`}
+                                alt={data.nama}
+                                className="h-40 w-40 object-cover rounded-full border"
+                                onError={e => { e.target.style.display = 'none'; }}
+                            />
+                        </div>
+                    )}
                     <dl className="divide-y divide-gray-200">
                         {[
                             ['Nama Lengkap', data.nama],

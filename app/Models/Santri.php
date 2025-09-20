@@ -70,4 +70,9 @@ class Santri extends Model
     {
         return $this->belongsTo(Kelas::class);
     }
+
+    public function jus()
+    {
+        return $this->hasMany(JuzSantri::class, 'santri_id');
+    }
 }

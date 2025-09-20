@@ -6,18 +6,20 @@ import Table from '../../SuperAdmin/components/Table';
 import Layout from '../components/Layout';
 
 const SantriIndex = () => {
-    const { santris = [] } = usePage().props;
+    const { santris } = usePage().props;
     const [keyword, setKeyword] = useState('');
-    const [rows, setRows] = useState(santris);
+    const [rows, setRows] = useState(santris.data || []);
 
-    // Sync rows jika santris dari backend berubah
     useEffect(() => {
-        setRows(santris);
+        setRows(santris.data || []);
     }, [santris]);
 
     const filtered = useMemo(() => {
         const q = keyword.toLowerCase();
-        return rows.filter((d) => d.nama.toLowerCase().includes(q) || d.kelas.toLowerCase().includes(q));
+        return rows.filter((d) =>
+            (d.nama || '').toLowerCase().includes(q) ||
+            (d.kelas && d.kelas.nama ? d.kelas.nama.toLowerCase().includes(q) : '')
+        );
     }, [rows, keyword]);
 
     const handleDelete = (id) => {
@@ -28,22 +30,43 @@ const SantriIndex = () => {
                 router.delete(url, {
                     preserveScroll: true,
                     onSuccess: () => setRows((prev) => prev.filter((r) => r.id !== id)),
-                    onError: () => setRows((prev) => prev.filter((r) => r.id !== id)), // fallback
+                    onError: () => setRows((prev) => prev.filter((r) => r.id !== id)),
                 });
                 return;
             }
-        } catch (e) {
-            // route() mungkin tidak tersedia; lanjut ke fallback
-        }
-        // Fallback hapus lokal (dummy)
+        } catch (e) {}
         setRows((prev) => prev.filter((r) => r.id !== id));
     };
 
     const columns = [
         { header: 'ID', accessor: 'id' },
+        {
+            header: 'Foto',
+            accessor: 'foto',
+            render: (row) =>
+                row.foto ? (
+                    <img
+                        src={`/storage/${row.foto}`}
+                        alt={row.nama}
+                        className="h-10 w-10 object-cover rounded-full border"
+                        style={{ minWidth: 40, minHeight: 40 }}
+                        onError={e => { e.target.style.display = 'none'; }}
+                    />
+                ) : (
+                    <span className="inline-block h-10 w-10 rounded-full bg-gray-200 text-gray-400 flex items-center justify-center">-</span>
+                ),
+        },
         { header: 'Nama', accessor: 'nama' },
-        { header: 'Kelas', accessor: 'kelas' },
-        { header: 'Total Juz Sah', accessor: 'totalJuz' },
+        {
+            header: 'Kelas',
+            accessor: 'kelas',
+            render: (row) => row.kelas && row.kelas.nama ? row.kelas.nama : '-',
+        },
+        {
+            header: 'Total Juz Sah',
+            accessor: 'totalJuz',
+            render: (row) => Array.isArray(row.jus) ? row.jus.length : 0,
+        },
         {
             header: 'Aksi',
             accessor: 'aksi',
@@ -89,6 +112,47 @@ const SantriIndex = () => {
                         </Link>
                     </div>
                     <Table columns={columns} data={filtered} actions={false} />
+
+                    {/* Inline Pagination */}
+                    {/* {santris && santris.meta && santris.links && santris.links.length > 1 && ( */}
+                        <div className="mt-4 flex justify-between items-center flex-wrap gap-2">
+                            <div className="text-sm text-gray-500">
+                                Menampilkan {santris.from ?? 0} sampai {santris.to ?? 0} dari {santris.total ?? 0} santri
+                            </div>
+                            <div className="flex space-x-2">
+                                {santris.links.map((link, idx) => {
+                                    // Bersihkan label dari html entities
+                                    const label = link.label.replace(/&laquo;|&raquo;|<[^>]+>/g, match => {
+                                        if (match === "&laquo;") return "«";
+                                        if (match === "&raquo;") return "»";
+                                        return "";
+                                    }).trim() || link.label;
+
+                                    return link.url ? (
+                                        <Link
+                                            key={idx}
+                                            href={link.url}
+                                            preserveScroll
+                                            className={`px-3 py-1 border rounded-md text-sm font-medium ${link.active
+                                                    ? "bg-indigo-50 border-indigo-500 text-indigo-600"
+                                                    : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                                                }`}
+                                            disabled={link.url === null}
+                                        >
+                                            {label}
+                                        </Link>
+                                    ) : (
+                                        <span
+                                            key={idx}
+                                            className="px-3 py-1 border border-gray-200 rounded-md text-sm font-medium text-gray-400 cursor-not-allowed"
+                                        >
+                                            {label}
+                                        </span>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    {/* )} */}
                 </div>
             </div>
         </Layout>
