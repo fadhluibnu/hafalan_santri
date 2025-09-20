@@ -30,3 +30,36 @@ Route::prefix('super-admin')
         // AdminCabang Routes
         Route::resource('admin-cabang', AdminCabangController::class);
     });
+
+    // Guru Routes (UI only, using Inertia pages)
+    Route::prefix('guru')
+        ->name('guru.')
+        // ->middleware(['auth', 'guru'])
+        ->group(function () {
+            Route::get('/', function () {
+                return Inertia::render('Guru/Dashboard');
+            })->name('dashboard');
+
+            Route::prefix('hafalan')->name('hafalan.')->group(function () {
+                Route::get('/', function () {
+                    return Inertia::render('Guru/Hafalan/Index');
+                })->name('index');
+
+                Route::get('/create', function () {
+                    return Inertia::render('Guru/Hafalan/Create');
+                })->name('create');
+
+                Route::get('/{id}', function ($id) {
+                    return Inertia::render('Guru/Hafalan/Show', ['id' => $id]);
+                })->name('show');
+
+                Route::get('/{id}/edit', function ($id) {
+                    return Inertia::render('Guru/Hafalan/Edit', ['id' => $id]);
+                })->name('edit');
+            });
+
+            // Laporan
+            Route::get('/laporan', function () {
+                return Inertia::render('Guru/Laporan');
+            })->name('laporan');
+        });
