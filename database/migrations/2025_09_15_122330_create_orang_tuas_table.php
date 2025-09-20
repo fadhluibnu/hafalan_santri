@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('pendidikan')->nullable();
             $table->string('pekerjaan')->nullable();
             $table->string('penghasilan')->nullable();
-            $table->string('email');
+            $table->string('email')->nullable();
             $table->string('handphone');
             $table->text('alamat')->nullable();
             $table->timestamps();

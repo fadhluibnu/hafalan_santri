@@ -60,7 +60,7 @@ const SantriEdit = ({ santri }) => {
                 <div className="flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-gray-700">Form Edit Santri</h2>
                     <Link
-                        href={`/admin-cabang/santri/${data.id}`}
+                        href={route('admin-cabang.santri.show', data.id)}
                         className="rounded-md border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
                     >
                         Kembali

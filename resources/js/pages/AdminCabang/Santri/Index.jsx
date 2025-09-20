@@ -1,17 +1,19 @@
-import { Link, router } from '@inertiajs/react';
-import { useMemo, useState } from 'react';
+import { Link, router, usePage } from '@inertiajs/react';
+import { useMemo, useState, useEffect } from 'react';
 import { route } from 'ziggy-js';
 import FormInput from '../../SuperAdmin/components/FormInput';
 import Table from '../../SuperAdmin/components/Table';
 import Layout from '../components/Layout';
 
 const SantriIndex = () => {
+    const { santris = [] } = usePage().props;
     const [keyword, setKeyword] = useState('');
-    const [rows, setRows] = useState([
-        { id: 1, nama: 'Ahmad Fauzi', kelas: 'Juz 30', totalJuz: 5 },
-        { id: 2, nama: 'Nur Aisyah', kelas: 'Juz 29', totalJuz: 3 },
-        { id: 3, nama: 'Budi Santoso', kelas: 'Juz 28', totalJuz: 4 },
-    ]);
+    const [rows, setRows] = useState(santris);
+
+    // Sync rows jika santris dari backend berubah
+    useEffect(() => {
+        setRows(santris);
+    }, [santris]);
 
     const filtered = useMemo(() => {
         const q = keyword.toLowerCase();
@@ -47,10 +49,10 @@ const SantriIndex = () => {
             accessor: 'aksi',
             render: (row) => (
                 <div className="space-x-2 whitespace-nowrap">
-                    <Link href={`/admin-cabang/santri/${row.id}`} className="text-blue-600 hover:text-blue-900">
+                    <Link href={route('admin-cabang.santri.show', row.id)} className="text-blue-600 hover:text-blue-900">
                         Detail
                     </Link>
-                    <Link href={`/admin-cabang/santri/${row.id}/edit`} className="text-yellow-600 hover:text-yellow-900">
+                    <Link href={route('admin-cabang.santri.edit', row.id)} className="text-yellow-600 hover:text-yellow-900">
                         Edit
                     </Link>
                     <button onClick={() => handleDelete(row.id)} className="text-red-600 hover:text-red-900">
@@ -80,7 +82,7 @@ const SantriIndex = () => {
                     <div className="mb-3 flex items-center justify-between">
                         <h2 className="text-lg font-semibold text-gray-700">Daftar Santri</h2>
                         <Link
-                            href="/admin-cabang/santri/create"
+                            href={route('admin-cabang.santri.create')}
                             className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700"
                         >
                             Tambah Santri
