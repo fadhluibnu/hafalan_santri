@@ -136,7 +136,7 @@ const SantriCreate = () => {
                 </div>
 
                 <div className="rounded-lg bg-white p-6 shadow-md">
-                    <form onSubmit={onSubmit}>
+                    <form onSubmit={onSubmit} encType="multipart/form-data">
                         {/* User Info */}
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 mb-6">
                             <FormInput label="Username" name="username" value={data.username} onChange={onChange} required />
