@@ -259,7 +259,55 @@ class SantriController extends Controller
      */
     public function show(string $id)
     {
-        //
+        // Ambil data santri beserta relasi orang tua dan kesehatan
+        $santri = Santri::with([
+            'orangTuas',
+            'kesehatanSantri',
+            'kelas:id,nama',
+            'pondok:id,nama'
+        ])->findOrFail($id);
+
+        // Format data orang tua agar mudah diakses di frontend
+        $ayah = $santri->orangTuas->where('tipe', 'Ayah')->first();
+        $ibu = $santri->orangTuas->where('tipe', 'Ibu')->first();
+        $wali = $santri->orangTuas->where('tipe', 'Wali')->first();
+
+        return Inertia::render('AdminCabang/Santri/Show', [
+            'santri' => [
+                'id' => $santri->id,
+                'nama' => $santri->nama,
+                'panggilan' => $santri->panggilan,
+                'jenis_kelamin' => $santri->jenis_kelamin,
+                'tempat_lahir' => $santri->tempat_lahir,
+                'tanggal_lahir' => $santri->tanggal_lahir,
+                'status_mukim' => $santri->status_mukim,
+                'kondisi' => $santri->kondisi,
+                'warga_negara' => $santri->warga_negara,
+                'kode_pos' => $santri->kode_pos,
+                'alamat' => $santri->alamat,
+                'anak_ke' => $santri->anak_ke,
+                'jumlah_saudara' => $santri->jumlah_saudara,
+                'status_anak' => $santri->status_anak,
+                'saudara_kandung' => $santri->saudara_kandung,
+                'saudara_tiri' => $santri->saudara_tiri,
+                'jarak_pondok' => $santri->jarak_pondok,
+                'telpon' => $santri->telpon,
+                'handphone' => $santri->handphone,
+                'email' => $santri->email,
+                'hobi' => $santri->hobi,
+                'foto' => $santri->foto,
+                'pondok_id' => $santri->pondok_id,
+                'kelas_id' => $santri->kelas_id,
+                'kelas_nama' => $santri->kelas ? $santri->kelas->nama : null,
+                'pondok_nama' => $santri->pondok ? $santri->pondok->nama : null,
+                // Orang tua
+                'ayah' => $ayah,
+                'ibu' => $ibu,
+                'wali' => $wali,
+                // Kesehatan
+                'kesehatan' => $santri->kesehatanSantri,
+            ]
+        ]);
     }
 
     /**
