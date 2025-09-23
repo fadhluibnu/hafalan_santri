@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminCabang\SantriController;
 use App\Http\Controllers\SuperAdmin\DashboardController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\SuperAdmin\AdminCabangController;
@@ -33,43 +34,17 @@ Route::prefix('super-admin')
 
 Route::prefix('admin-cabang')
     ->name('admin-cabang.')
-    // ->middleware(['auth', 'admin_cabang'])
+    ->middleware(['auth', 'admin_cabang'])
     ->group(function () {
         Route::get('/', function () {
             return Inertia::render('AdminCabang/Dashboard');
         })->name('dashboard');
-        Route::get('/santri', function () {
-            return Inertia::render('AdminCabang/Santri/Index');
-        })->name('santri.index');
-        Route::get('/santri/create', function () {
-            return Inertia::render('AdminCabang/Santri/Create');
-        })->name('santri.create');
-        Route::get('/santri/{id}/edit', function ($id) {
-            return Inertia::render('AdminCabang/Santri/Edit', ['id' => $id]);
-        })->name('santri.edit');
-        Route::get('/santri/{id}', function ($id) {
-            return Inertia::render('AdminCabang/Santri/Show', ['id' => $id]);
-        })->name('santri.show');
-        Route::delete('/santri/{id}', function ($id) {
-            // Dummy delete handler - replace with controller when backend ready
-            return back()->with('success', 'Santri deleted (dummy)');
-        })->name('santri.destroy');
-        Route::get('/guru', function () {
-            return Inertia::render('AdminCabang/Guru/Index');
-        })->name('guru.index');
-        Route::get('/guru/create', function () {
-            return Inertia::render('AdminCabang/Guru/Create');
-        })->name('guru.create');
-        Route::get('/guru/{id}/edit', function ($id) {
-            return Inertia::render('AdminCabang/Guru/Edit', ['id' => $id]);
-        })->name('guru.edit');
-        Route::get('/guru/{id}', function ($id) {
-            return Inertia::render('AdminCabang/Guru/Show', ['id' => $id]);
-        })->name('guru.show');
-        Route::delete('/guru/{id}', function ($id) {
-            // Dummy delete handler - replace with controller when backend ready
-            return back()->with('success', 'Guru deleted (dummy)');
-        })->name('guru.destroy');
+
+        // Santri Resource Route
+        Route::resource('santri', SantriController::class);
+
+        // Guru Routes
+        Route::resource('guru', \App\Http\Controllers\AdminCabang\GuruController::class);
         Route::prefix('struktur/kelas')->name('struktur.kelas.')->group(function () {
             Route::get('/', function () {
                 return Inertia::render('AdminCabang/Struktur/kelas/Index');

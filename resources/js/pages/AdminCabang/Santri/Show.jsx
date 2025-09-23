@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import { route } from 'ziggy-js';
 import Layout from '../components/Layout';
 
 const SantriShow = ({ santri }) => {
@@ -68,13 +69,13 @@ const SantriShow = ({ santri }) => {
 
                 <div className="flex items-center justify-end space-x-3">
                     <Link
-                        href={`/admin-cabang/santri/${data.id}/edit`}
+                        href={route('admin-cabang.santri.edit', data.id)}
                         className="rounded-md bg-yellow-500 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-yellow-600"
                     >
                         Edit
                     </Link>
                     <Link
-                        href="/admin-cabang/santri"
+                        href={route('admin-cabang.santri.index')}
                         className="rounded-md border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
                     >
                         Kembali

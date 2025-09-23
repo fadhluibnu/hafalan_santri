@@ -50,7 +50,7 @@ class Santri extends Model
      */
     public function orangTuas()
     {
-        return $this->hasMany(OrangTua::class);
+        return $this->hasMany(OrangTua::class, 'santri_id');
     }
 
     /**
@@ -58,11 +58,16 @@ class Santri extends Model
      */
     public function kesehatanSantri()
     {
-        return $this->hasOne(KesehatanSantri::class);
+        return $this->hasOne(KesehatanSantri::class, 'santri_id');
     }
 
     public function pondok()
     {
         return $this->belongsTo(Pondok::class);
+    }
+    
+    public function kelas()
+    {
+        return $this->belongsTo(Kelas::class);
     }
 }

@@ -23,6 +23,6 @@ class KesehatanSantri extends Model
      */
     public function santri()
     {
-        return $this->belongsTo(Santri::class);
+        return $this->belongsTo(Santri::class, 'santri_id');
     }
 }
