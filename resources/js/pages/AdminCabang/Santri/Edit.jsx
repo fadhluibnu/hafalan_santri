@@ -7,8 +7,7 @@ const SantriEdit = ({ santri }) => {
     const initial = santri || {
         id: 1,
         user_id: 1,
-        pondok_id: 1,
-        kelas_id: 1,
+        // pondok_id and kelas_id managed elsewhere
         nama: 'Ahmad Fauzi',
         panggilan: 'Ahmad',
         jenis_kelamin: 'L',
@@ -125,8 +124,10 @@ const SantriEdit = ({ santri }) => {
                             <FormInput label="Email" name="email" type="email" value={data.email} onChange={onChange} />
                             <FormInput label="Hobi" name="hobi" value={data.hobi} onChange={onChange} />
 
-                            <FormInput label="Pondok ID" name="pondok_id" type="number" value={data.pondok_id} onChange={onChange} />
-                            <FormInput label="Kelas ID" name="kelas_id" type="number" value={data.kelas_id} onChange={onChange} />
+                            {/* Catatan: Pondok diambil otomatis sesuai admin cabang, Kelas ditentukan di Penempatan Kelas */}
+                            <div className="text-sm text-gray-600 md:col-span-2">
+                                Pondok dan Kelas tidak dapat diubah di sini. Silakan gunakan fitur Penempatan Kelas untuk mengatur kelas santri.
+                            </div>
 
                             <div className="md:col-span-2">
                                 <FormInput label="Foto" name="foto" type="file" onChange={onChange} />

@@ -6,8 +6,6 @@ import Layout from '../components/Layout';
 const SantriCreate = () => {
     const [data, setData] = useState({
         user_id: '',
-        pondok_id: '',
-        kelas_id: '',
         nama: '',
         panggilan: '',
         jenis_kelamin: '',
@@ -128,9 +126,11 @@ const SantriCreate = () => {
                             <FormInput label="Email" name="email" type="email" value={data.email} onChange={onChange} />
                             <FormInput label="Hobi" name="hobi" value={data.hobi} onChange={onChange} />
 
-                            {/* Relasional - placeholder input id */}
-                            <FormInput label="Pondok ID" name="pondok_id" type="number" value={data.pondok_id} onChange={onChange} />
-                            <FormInput label="Kelas ID" name="kelas_id" type="number" value={data.kelas_id} onChange={onChange} />
+                            {/* Catatan: pondok_id akan otomatis sesuai admin cabang, kelas_id akan diatur lewat penempatan kelas */}
+                            <div className="text-sm text-gray-600 md:col-span-2">
+                                Pondok dan Kelas tidak perlu diisi di sini. Pondok diambil otomatis sesuai akun admin cabang, dan Kelas akan
+                                ditentukan di menu Penempatan Kelas.
+                            </div>
 
                             {/* Foto */}
                             <div className="md:col-span-2">

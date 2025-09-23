@@ -6,7 +6,6 @@ import Layout from '../components/Layout';
 const GuruCreate = () => {
     const [data, setData] = useState({
         user_id: '',
-        pondok_id: '',
         nip: '',
         nama: '',
         gelar_awal: '',
@@ -103,8 +102,7 @@ const GuruCreate = () => {
                                 <FormInput label="Keterangan" name="keterangan" type="textarea" value={data.keterangan} onChange={onChange} />
                             </div>
 
-                            {/* Relasional sementara pakai input ID */}
-                            <FormInput label="Pondok ID" name="pondok_id" type="number" value={data.pondok_id} onChange={onChange} />
+                            {/* Pondok otomatis sesuai admin cabang */}
                             <FormInput label="User ID" name="user_id" type="number" value={data.user_id} onChange={onChange} />
                         </div>
 

@@ -7,7 +7,7 @@ const GuruEdit = ({ guru }) => {
     const initial = guru || {
         id: 1,
         user_id: 1,
-        pondok_id: 1,
+        // pondok_id managed automatically by admin cabang
         nip: '1234567890',
         nama: 'Ustadz Rahman',
         gelar_awal: 'S.Pd',
@@ -106,7 +106,7 @@ const GuruEdit = ({ guru }) => {
                                 <FormInput label="Keterangan" name="keterangan" type="textarea" value={data.keterangan} onChange={onChange} />
                             </div>
 
-                            <FormInput label="Pondok ID" name="pondok_id" type="number" value={data.pondok_id} onChange={onChange} />
+                            {/* Pondok otomatis sesuai admin cabang */}
                             <FormInput label="User ID" name="user_id" type="number" value={data.user_id} onChange={onChange} />
                         </div>
 
