@@ -7,6 +7,7 @@ use App\Http\Controllers\SuperAdmin\AdminCabangController;
 use App\Http\Controllers\SuperAdmin\PondokController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\AdminCabang\KelasController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -45,41 +46,40 @@ Route::prefix('admin-cabang')
 
         // Guru Routes
         Route::resource('guru', \App\Http\Controllers\AdminCabang\GuruController::class);
-        Route::prefix('struktur/kelas')->name('struktur.kelas.')->group(function () {
-            Route::get('/', function () {
-                return Inertia::render('AdminCabang/Struktur/kelas/Index');
-            })->name('index');
 
-            Route::get('/create', function () {
-                return Inertia::render('AdminCabang/Struktur/kelas/Create');
-            })->name('create');
-
-            Route::get('/{id}', function ($id) {
-                // Optionally pass dummy data as props, for now the React page has its own fallback
-                return Inertia::render('AdminCabang/Struktur/kelas/Show', [
-                    // 'kelas' => ['id' => (int)$id, 'nama' => 'Kelas Tahfidz A', 'tingkat' => 'Juz 30', 'waliKelas' => 'Ustadz Rahman', 'kapasitas' => 25, 'keterangan' => '...']
-                ]);
-            })->name('show');
-
-            Route::get('/{id}/edit', function ($id) {
-                return Inertia::render('AdminCabang/Struktur/kelas/Edit', [
-                    // 'kelas' => ['id' => (int)$id, 'nama' => 'Kelas Tahfidz A', 'tingkat' => 'Juz 30', 'waliKelas' => 'Ustadz Rahman', 'kapasitas' => 25, 'keterangan' => '...']
-                ]);
-            })->name('edit');
-            Route::get('/{id}/santri', function ($id) {
-                return Inertia::render('AdminCabang/Struktur/kelas/ManageSantri', [
-                    // 'kelas' => ['id' => (int)$id, 'nama' => 'Kelas Tahfidz A', 'tingkat' => 'Juz 30', 'waliKelas' => 'Ustadz Rahman', 'kapasitas' => 25, 'keterangan' => '...']
-                ]);
-            })->name('manage_santri');
-            Route::post('/{id}/santri', function ($id) {
-                // Expect payload: santri_ids: array
-                // For now, just bounce back with a success message
-                return back()->with('success', 'Penempatan santri disimpan (dummy)');
-            })->name('manage_santri.store');
-
-            Route::delete('/{id}', function ($id) {
-                // Dummy destroy kelas
-                return back()->with('success', 'Kelas dihapus (dummy)');
-            })->name('destroy');
-        });
+        // Ganti blok closure sebelumnya dengan resource controller untuk struktur/kelas
+        Route::resource('struktur/kelas', KelasController::class)
+            ->names([
+                'index' => 'struktur.kelas.index',
+                'create' => 'struktur.kelas.create',
+                'store' => 'struktur.kelas.store',
+                'show' => 'struktur.kelas.show',
+                'edit' => 'struktur.kelas.edit',
+                'update' => 'struktur.kelas.update',
+                'destroy' => 'struktur.kelas.destroy',
+            ]);
     });
+    //         })->name('show');
+
+    //         Route::get('/{id}/edit', function ($id) {
+    //             return Inertia::render('AdminCabang/Struktur/kelas/Edit', [
+    //                 // 'kelas' => ['id' => (int)$id, 'nama' => 'Kelas Tahfidz A', 'tingkat' => 'Juz 30', 'waliKelas' => 'Ustadz Rahman', 'kapasitas' => 25, 'keterangan' => '...']
+    //             ]);
+    //         })->name('edit');
+    //         Route::get('/{id}/santri', function ($id) {
+    //             return Inertia::render('AdminCabang/Struktur/kelas/ManageSantri', [
+    //                 // 'kelas' => ['id' => (int)$id, 'nama' => 'Kelas Tahfidz A', 'tingkat' => 'Juz 30', 'waliKelas' => 'Ustadz Rahman', 'kapasitas' => 25, 'keterangan' => '...']
+    //             ]);
+    //         })->name('manage_santri');
+    //         Route::post('/{id}/santri', function ($id) {
+    //             // Expect payload: santri_ids: array
+    //             // For now, just bounce back with a success message
+    //             return back()->with('success', 'Penempatan santri disimpan (dummy)');
+    //         })->name('manage_santri.store');
+
+    //         Route::delete('/{id}', function ($id) {
+    //             // Dummy destroy kelas
+    //             return back()->with('success', 'Kelas dihapus (dummy)');
+    //         })->name('destroy');
+    //     });
+    // });

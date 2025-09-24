@@ -14,6 +14,8 @@ class Kelas extends Model
         'pondok_id',
         'nama',
         'wali_kelas_id',
+        'tingkat',
+        'kapasitas',
         'keterangan',
         'status',
     ];
