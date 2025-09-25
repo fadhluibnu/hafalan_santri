@@ -16,14 +16,49 @@ class KelasController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Tampilkan daftar kelas (opsional filter berdasarkan pondok user jika ada)
-        $pondokId = Auth::user()->pondok_id ?? null;
-        $kelas = $pondokId ? Kelas::where('pondok_id', $pondokId)->get() : Kelas::all();
+        // Ambil pondok_id dari admin cabang yang login
+        $adminCabang = AdminCabang::where('user_id', Auth::id())->first();
+        $pondokId = $adminCabang->pondok_id ?? null;
+
+        $q = $request->input('q');
+
+        $query = Kelas::with('waliKelas')->withCount('santris');
+
+        if ($pondokId) {
+            $query->where('pondok_id', $pondokId);
+        }
+
+        if ($q) {
+            $query->where(function ($qry) use ($q) {
+                $qry->where('nama', 'like', "%{$q}%")
+                    ->orWhere('tingkat', 'like', "%{$q}%")
+                    ->orWhereHas('waliKelas', function ($q2) use ($q) {
+                        $q2->where('nama', 'like', "%{$q}%");
+                    });
+            });
+        }
+
+        $perPage = 10;
+        $kelas = $query->orderBy('nama')->paginate($perPage)->appends($request->only('q'));
+
+        // Transform item supaya frontend mudah akses properti yang dibutuhkan
+        $kelasTransformed = $kelas->through(function ($k) {
+            return [
+                'id' => $k->id,
+                'nama' => $k->nama,
+                'tingkat' => $k->tingkat,
+                'wali_kelas' => $k->waliKelas?->nama,
+                'wali_kelas_id' => $k->wali_kelas_id,
+                'kapasitas' => $k->kapasitas,
+                'terisi' => $k->santris_count ?? 0,
+            ];
+        });
 
         return Inertia::render('AdminCabang/Struktur/kelas/Index', [
-            'kelas' => $kelas,
+            'kelas' => $kelasTransformed,
+            'filters' => $request->only('q'),
         ]);
     }
 

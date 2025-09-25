@@ -29,4 +29,9 @@ class Kelas extends Model
     {
         return $this->belongsTo(Guru::class, 'wali_kelas_id');
     }
+
+    public function santris()
+    {
+        return $this->hasMany(Santri::class, 'kelas_id');
+    }
 }

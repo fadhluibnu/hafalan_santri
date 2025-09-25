@@ -3,7 +3,7 @@ import { Link, useForm } from '@inertiajs/react';
 import FormInput from '../../../SuperAdmin/components/FormInput';
 import Layout from '../../components/Layout';
 
-const KelasCreate = ({ gurus = [], errors = {} }) => {
+const KelasCreate = ({ gurus = [] }) => {
     const { data, setData, post, processing, errors } = useForm({
         nama: '',
         tingkat: 'Juz 30',
