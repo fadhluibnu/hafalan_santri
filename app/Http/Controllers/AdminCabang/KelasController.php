@@ -129,7 +129,31 @@ class KelasController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        // Ambil kelas beserta relasi wali
+        $kelas = Kelas::with('waliKelas')->findOrFail($id);
+
+        // Pastikan kelas milik pondok admin cabang yang login
+        $adminCabang = AdminCabang::where('user_id', Auth::id())->first();
+        $pondokId = $adminCabang->pondok_id ?? null;
+        if ($pondokId && $kelas->pondok_id !== $pondokId) {
+            abort(403, 'Anda tidak berwenang mengakses kelas ini.');
+        }
+
+        // Ambil daftar guru untuk pondok tersebut (id + nama)
+        $gurus = $pondokId ? Guru::where('pondok_id', $pondokId)->select('id', 'nama')->orderBy('nama')->get() : collect();
+
+        // Kirim ke Inertia
+        return Inertia::render('AdminCabang/Struktur/kelas/Edit', [
+            'kelas' => [
+                'id' => $kelas->id,
+                'nama' => $kelas->nama,
+                'tingkat' => $kelas->tingkat,
+                'wali_kelas_id' => $kelas->wali_kelas_id,
+                'kapasitas' => $kelas->kapasitas,
+                'keterangan' => $kelas->keterangan,
+            ],
+            'gurus' => $gurus,
+        ]);
     }
 
     /**
@@ -137,7 +161,39 @@ class KelasController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $validated = $request->validate([
+            'nama' => 'required|string|max:255',
+            'tingkat' => 'nullable|string|max:50',
+            'wali_kelas_id' => 'nullable|exists:gurus,id',
+            'kapasitas' => 'nullable|integer|min:1',
+            'keterangan' => 'nullable|string',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $kelas = Kelas::findOrFail($id);
+
+            // Pastikan kelas milik pondok admin cabang yang login
+            $adminCabang = AdminCabang::where('user_id', Auth::id())->first();
+            $pondokId = $adminCabang->pondok_id ?? null;
+            if ($pondokId && $kelas->pondok_id !== $pondokId) {
+                abort(403, 'Anda tidak berwenang memperbarui kelas ini.');
+            }
+
+            $kelas->update([
+                'nama' => $validated['nama'],
+                'tingkat' => $validated['tingkat'] ?? null,
+                'kapasitas' => $validated['kapasitas'] ?? null,
+                'wali_kelas_id' => $validated['wali_kelas_id'] ?? null,
+                'keterangan' => $validated['keterangan'] ?? null,
+            ]);
+
+            DB::commit();
+            return redirect()->route('admin-cabang.struktur.kelas.index')->with('success', 'Kelas berhasil diperbarui');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan saat memperbarui: ' . $e->getMessage()])->withInput();
+        }
     }
 
     /**
