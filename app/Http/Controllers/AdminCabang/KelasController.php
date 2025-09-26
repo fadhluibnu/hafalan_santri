@@ -121,7 +121,49 @@ class KelasController extends Controller
      */
     public function show(string $id)
     {
-        //
+        // Ambil kelas beserta wali dan santris (dengan jus terbaru)
+        $kelas = Kelas::with([
+            'waliKelas',
+            'santris.jus' => function ($q) {
+                $q->orderBy('created_at', 'desc');
+            },
+        ])->findOrFail($id);
+
+        // Pastikan kelas milik pondok admin cabang yang login
+        $adminCabang = AdminCabang::where('user_id', Auth::id())->first();
+        $pondokId = $adminCabang->pondok_id ?? null;
+        if ($pondokId && $kelas->pondok_id !== $pondokId) {
+            abort(403, 'Anda tidak berwenang mengakses kelas ini.');
+        }
+
+        // Transform santri supaya frontend menerima field yang diharapkan
+        $santriList = $kelas->santris->map(function ($s) {
+            $latestJuz = $s->jus->first(); // karena sudah di-order desc
+            $juzLabel = null;
+            if ($latestJuz) {
+                // coba ambil properti yang umum (sesuaikan jika berbeda)
+                $juzLabel = $latestJuz->nama ?? $latestJuz->juz ?? null;
+            }
+            return [
+                'id' => $s->id,
+                'nis' => $s->nis ?? null,
+                'nama' => $s->nama,
+                'jenis_kelamin' => $s->jenis_kelamin,
+                'juzTerakhir' => $juzLabel,
+            ];
+        })->values();
+
+        return Inertia::render('AdminCabang/Struktur/kelas/Show', [
+            'kelas' => [
+                'id' => $kelas->id,
+                'nama' => $kelas->nama,
+                'tingkat' => $kelas->tingkat,
+                'waliKelas' => $kelas->waliKelas?->nama,
+                'kapasitas' => $kelas->kapasitas,
+                'keterangan' => $kelas->keterangan,
+            ],
+            'santri' => $santriList,
+        ]);
     }
 
     /**

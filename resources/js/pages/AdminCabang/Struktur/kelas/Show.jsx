@@ -1,26 +1,19 @@
 import { Link } from '@inertiajs/react';
 import Layout from '../../components/Layout';
 
-const KelasShow = ({ kelas, santri: santriProp = [] }) => {
-    // Dummy detail
-    const data = kelas || {
-        id: 1,
-        nama: 'Kelas Tahfidz A',
-        tingkat: 'Juz 30',
-        waliKelas: 'Ustadz Rahman',
-        kapasitas: 25,
-        keterangan: 'Keterangan kelas...',
+const KelasShow = ({ kelas = null, santri: santriProp = [] }) => {
+    // gunakan props kelas yang dikirim controller; fallback minimal jika null
+    const data = kelas ?? {
+        id: null,
+        nama: '-',
+        tingkat: '-',
+        waliKelas: '-',
+        kapasitas: '-',
+        keterangan: '-',
     };
 
-    // Dummy santri list if none provided via props
-    const santriList =
-        Array.isArray(santriProp) && santriProp.length > 0
-            ? santriProp
-            : [
-                  { id: 1, nis: 'S001', nama: 'Ahmad Zaki', jenis_kelamin: 'L', juzTerakhir: 'Juz 30' },
-                  { id: 2, nis: 'S002', nama: 'Budi Santoso', jenis_kelamin: 'L', juzTerakhir: 'Juz 29' },
-                  { id: 3, nis: 'S003', nama: 'Citra Ayu', jenis_kelamin: 'P', juzTerakhir: 'Juz 28' },
-              ];
+    // gunakan santri dari props; jika bukan array, ubah menjadi array kosong
+    const santriList = Array.isArray(santriProp) ? santriProp : [];
 
     const labelJK = (v) => (v === 'L' ? 'Laki-laki' : v === 'P' ? 'Perempuan' : '-');
 
@@ -70,16 +63,17 @@ const KelasShow = ({ kelas, santri: santriProp = [] }) => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {santriList.map((s, idx) => (
-                                    <tr key={s.id} className="border-b">
-                                        <td className="px-4 py-2">{idx + 1}</td>
-                                        <td className="px-4 py-2">{s.nis || '-'}</td>
-                                        <td className="px-4 py-2">{s.nama || '-'}</td>
-                                        <td className="px-4 py-2">{labelJK(s.jenis_kelamin)}</td>
-                                        <td className="px-4 py-2">{s.juzTerakhir || '-'}</td>
-                                    </tr>
-                                ))}
-                                {santriList.length === 0 && (
+                                {santriList.length > 0 ? (
+                                    santriList.map((s, idx) => (
+                                        <tr key={s.id} className="border-b">
+                                            <td className="px-4 py-2">{idx + 1}</td>
+                                            <td className="px-4 py-2">{s.nis ?? '-'}</td>
+                                            <td className="px-4 py-2">{s.nama ?? '-'}</td>
+                                            <td className="px-4 py-2">{labelJK(s.jenis_kelamin)}</td>
+                                            <td className="px-4 py-2">{s.juzTerakhir ?? '-'}</td>
+                                        </tr>
+                                    ))
+                                ) : (
                                     <tr>
                                         <td className="px-4 py-6 text-center text-gray-500" colSpan={5}>
                                             Belum ada santri dalam kelas ini
