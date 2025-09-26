@@ -1,4 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
+import { route } from 'ziggy-js';
 import { useMemo, useState, useEffect, useRef } from 'react';
 import FormInput from '../../../SuperAdmin/components/FormInput';
 import Table from '../../../SuperAdmin/components/Table';
@@ -28,6 +29,25 @@ const KelasIndex = () => {
         };
     }, [keyword]);
 
+    // handle delete connected to controller
+    const handleDelete = (id) => {
+        if (!confirm('Yakin ingin menghapus kelas ini?')) return;
+
+        console.log('Hapus kelas ID:', id);
+        router.delete(route('admin-cabang.struktur.kelas.destroy', id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                // hapus dari UI
+                setRows((prev) => prev.filter((r) => r.id !== id));
+            },
+            onError: (err) => {
+                // tampilkan error singkat (bisa dikembangkan)
+                console.error('Gagal menghapus kelas:', err);
+                alert('Gagal menghapus kelas. Periksa kembali dependensi atau pesan error.');
+            },
+        });
+    };
+
     const columns = [
         { header: 'ID', accessor: 'id' },
         { header: 'Nama Kelas', accessor: 'nama' },
@@ -41,6 +61,24 @@ const KelasIndex = () => {
                 <span className="inline-flex min-w-[72px] items-center justify-center rounded bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
                     {row.terisi ?? 0}/{row.kapasitas ?? '-'}
                 </span>
+            ),
+        },
+        // added manual Aksi column (was removed earlier which caused Table's built-in action to be used incorrectly)
+        {
+            header: 'Aksi',
+            accessor: 'aksi',
+            render: (row) => (
+                <div className="space-x-2 whitespace-nowrap">
+                    <Link href={route('admin-cabang.struktur.kelas.show', row.id)} className="text-blue-600 hover:text-blue-900">
+                        Detail
+                    </Link>
+                    <Link href={route('admin-cabang.struktur.kelas.edit', row.id)} className="text-yellow-600 hover:text-yellow-900">
+                        Edit
+                    </Link>
+                    <button onClick={() => handleDelete(row.id)} className="text-red-600 hover:text-red-900">
+                        Hapus
+                    </button>
+                </div>
             ),
         },
         {
@@ -83,7 +121,7 @@ const KelasIndex = () => {
                 </div>
 
                 <div className="rounded-lg bg-white p-4 shadow-md">
-                    <Table columns={columns} data={rows} actions={true} baseRoute="/admin-cabang/struktur/kelas" />
+                    <Table columns={columns} data={rows} actions={false} baseRoute="/admin-cabang/struktur/kelas" />
 
                     {/* Pagination */}
                     {kelas && kelas.links && (

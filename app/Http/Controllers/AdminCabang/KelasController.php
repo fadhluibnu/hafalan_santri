@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\AdminCabang;
 use App\Models\Guru;
+use App\Models\Santri;
 
 class KelasController extends Controller
 {
@@ -243,6 +244,33 @@ class KelasController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        DB::beginTransaction();
+        try {
+            $kelas = Kelas::withCount('santris')->findOrFail($id);
+
+            // Pastikan admin cabang memiliki pondok yang sama
+            $adminCabang = AdminCabang::where('user_id', Auth::id())->first();
+            if (!$adminCabang) {
+                abort(403, 'Data admin cabang tidak ditemukan.');
+            }
+            if ($kelas->pondok_id !== $adminCabang->pondok_id) {
+                abort(403, 'Anda tidak berwenang menghapus kelas ini.');
+            }
+
+            // Cek dependensi: jika ada santri di kelas, tolak penghapusan
+            if (($kelas->santris_count ?? 0) > 0) {
+                return redirect()->back()->withErrors(['error' => 'Kelas memiliki santri. Pindahkan atau hapus santri terlebih dahulu sebelum menghapus kelas.']);
+            }
+
+            // Jika perlu hapus relasi lain yang aman di sini (misal jadwal), tambahkan pengecekan sebelum menghapus
+
+            $kelas->delete();
+
+            DB::commit();
+            return redirect()->route('admin-cabang.struktur.kelas.index')->with('success', 'Kelas berhasil dihapus.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan saat menghapus: ' . $e->getMessage()]);
+        }
     }
 }
