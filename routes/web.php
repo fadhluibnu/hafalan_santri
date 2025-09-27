@@ -58,6 +58,12 @@ Route::prefix('admin-cabang')
                 'update' => 'struktur.kelas.update',
                 'destroy' => 'struktur.kelas.destroy',
             ]);
+
+        // Tambahkan route untuk manage santri (penempatan)
+        Route::get('struktur/kelas/{id}/santri', [KelasController::class, 'manageSantri'])
+            ->name('struktur.kelas.manage_santri');
+        Route::post('struktur/kelas/{id}/santri', [KelasController::class, 'storeSantri'])
+            ->name('struktur.kelas.manage_santri.store');
     });
     //         })->name('show');
 

@@ -273,4 +273,107 @@ class KelasController extends Controller
             return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan saat menghapus: ' . $e->getMessage()]);
         }
     }
+
+    /**
+     * Show manage santri page for a class.
+     */
+    public function manageSantri(Request $request, string $id)
+    {
+        $kelas = Kelas::findOrFail($id);
+
+        // Pastikan kelas milik pondok admin cabang yang login
+        $adminCabang = AdminCabang::where('user_id', Auth::id())->first();
+        $pondokId = $adminCabang->pondok_id ?? null;
+        if ($pondokId && $kelas->pondok_id !== $pondokId) {
+            abort(403, 'Anda tidak berwenang mengakses halaman ini.');
+        }
+
+        // Ambil semua santri di pondok tersebut (minimal fields) dan latest juz (jika ada)
+        $santris = $pondokId
+            ? Santri::with(['jus' => function ($q) { $q->orderBy('created_at', 'desc'); }])
+                ->where('pondok_id', $pondokId)
+                ->select('id', 'nama', 'jenis_kelamin', 'kelas_id')
+                ->orderBy('nama')
+                ->get()
+            : collect();
+
+        $assignedIds = $santris->filter(fn($s) => $s->kelas_id == $kelas->id)->pluck('id')->toArray();
+
+        // Transform santri untuk frontend (ambil latest juz label jika ada)
+        $santrisTransformed = $santris->map(function ($s) {
+            $latestJuz = $s->jus->first();
+            return [
+                'id' => $s->id,
+                'nis' => $s->nis ?? null,
+                'nama' => $s->nama,
+                'jenis_kelamin' => $s->jenis_kelamin,
+                'kelas_id' => $s->kelas_id,
+                'juzTerakhir' => $latestJuz?->nama ?? $latestJuz?->juz ?? null,
+            ];
+        })->values();
+
+        return Inertia::render('AdminCabang/Struktur/kelas/ManageSantri', [
+            'kelas' => [
+                'id' => $kelas->id,
+                'nama' => $kelas->nama,
+                'tingkat' => $kelas->tingkat,
+            ],
+            'santris' => $santrisTransformed,
+            'assignedIds' => $assignedIds,
+        ]);
+    }
+
+    /**
+     * Store santri assignments to a class.
+     */
+    public function storeSantri(Request $request, string $id)
+    {
+        $validated = $request->validate([
+            'santri_ids' => 'nullable|array',
+            'santri_ids.*' => 'integer|exists:santris,id',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $kelas = Kelas::findOrFail($id);
+
+            // Pastikan kelas milik pondok admin cabang yang login
+            $adminCabang = AdminCabang::where('user_id', Auth::id())->first();
+            if (!$adminCabang) {
+                abort(403, 'Data admin cabang tidak ditemukan.');
+            }
+            $pondokId = $adminCabang->pondok_id ?? null;
+            if ($pondokId && $kelas->pondok_id !== $pondokId) {
+                abort(403, 'Anda tidak berwenang mengubah penempatan santri untuk kelas ini.');
+            }
+
+            $incoming = collect($validated['santri_ids'] ?? [])->map(fn($v) => (int)$v)->unique()->values()->all();
+
+            // Pastikan semua incoming santri memang milik pondok yang sama
+            if (!empty($incoming)) {
+                $validCount = Santri::whereIn('id', $incoming)->where('pondok_id', $pondokId)->count();
+                if ($validCount !== count($incoming)) {
+                    throw new \Exception('Beberapa santri tidak ditemukan di pondok Anda atau tidak valid.');
+                }
+            }
+
+            // Lepaskan santri yang sebelumnya pada kelas ini tapi tidak ada di incoming
+            Santri::where('kelas_id', $kelas->id)
+                ->whereNotIn('id', $incoming)
+                ->update(['kelas_id' => null]);
+
+            // Set kelas_id untuk incoming santri
+            if (!empty($incoming)) {
+                Santri::whereIn('id', $incoming)
+                    ->where('pondok_id', $pondokId)
+                    ->update(['kelas_id' => $kelas->id]);
+            }
+
+            DB::commit();
+            return redirect()->route('admin-cabang.struktur.kelas.show', $kelas->id)->with('success', 'Penempatan santri berhasil disimpan.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return redirect()->back()->withErrors(['error' => 'Gagal menyimpan penempatan santri: ' . $e->getMessage()])->withInput();
+        }
+    }
 }

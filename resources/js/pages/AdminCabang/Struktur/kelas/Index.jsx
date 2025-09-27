@@ -86,7 +86,7 @@ const KelasIndex = () => {
             accessor: 'penempatan',
             render: (row) => (
                 <Link
-                    href={`/admin-cabang/struktur/kelas/${row.id}/santri`}
+                    href={route('admin-cabang.struktur.kelas.manage_santri', row.id)}
                     className="inline-flex items-center rounded-md bg-green-600 px-3 py-1.5 text-xs font-semibold text-white shadow hover:bg-green-700"
                 >
                     Tempatkan Santri
