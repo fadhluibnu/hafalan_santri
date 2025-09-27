@@ -4,13 +4,8 @@ import Table from '../../SuperAdmin/components/Table';
 // Komponen RekapTable untuk menampilkan rekap hafalan santri
 // Menggunakan Table dari SuperAdmin agar konsisten style & struktur
 const RekapTable = ({ data = [], onSend }) => {
-    const safeData =
-        Array.isArray(data) && data.length > 0
-            ? data
-            : [
-                  { id: 1, nama: 'Ahmad Fauzi', juz: 5, status: 'Sah' },
-                  { id: 2, nama: 'Nur Aisyah', juz: 3, status: 'Proses' },
-              ];
+    // gunakan data props secara langsung. jika kosong, tabel akan menampilkan kosong sesuai Table component.
+    const safeData = Array.isArray(data) ? data : [];
 
     // Tambahkan nomor urut agar kolom "No" tidak bergantung pada index dari Table
     const numberedData = safeData.map((row, idx) => ({ ...row, no: idx + 1 }));
@@ -64,12 +59,17 @@ RekapTable.propTypes = {
     data: PropTypes.arrayOf(
         PropTypes.shape({
             id: PropTypes.number.isRequired,
-            nama: PropTypes.string.isRequired,
-            juz: PropTypes.number.isRequired,
-            status: PropTypes.string.isRequired,
+            nama: PropTypes.string,
+            // juz bisa berupa number atau string tergantung sumber data
+            juz: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+            status: PropTypes.string,
         }),
     ),
     onSend: PropTypes.func,
 };
+
+// export default RekapTable;
+//     onSend: PropTypes.func,
+// };
 
 export default RekapTable;

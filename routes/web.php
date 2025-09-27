@@ -37,9 +37,8 @@ Route::prefix('admin-cabang')
     ->name('admin-cabang.')
     ->middleware(['auth', 'admin_cabang'])
     ->group(function () {
-        Route::get('/', function () {
-            return Inertia::render('AdminCabang/Dashboard');
-        })->name('dashboard');
+        // Gunakan controller agar data dinamis dari DashboardController@index tersedia di view
+        Route::get('/', [\App\Http\Controllers\AdminCabang\DashboardController::class, 'index'])->name('dashboard');
 
         // Santri Resource Route
         Route::resource('santri', SantriController::class);
@@ -88,4 +87,5 @@ Route::prefix('admin-cabang')
     //             return back()->with('success', 'Kelas dihapus (dummy)');
     //         })->name('destroy');
     //     });
+    // });
     // });
