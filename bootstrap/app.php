@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\IsAdminCabang;
+use App\Http\Middleware\IsGuru;
 use App\Http\Middleware\IsSuperAdmin;
 use GuzzleHttp\Promise\Is;
 use Illuminate\Foundation\Application;
@@ -20,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'super_admin' => IsSuperAdmin::class,
             'admin_cabang' => IsAdminCabang::class,
+            'guru' => IsGuru::class,
         ]);
 
         $middleware->web(append: [
