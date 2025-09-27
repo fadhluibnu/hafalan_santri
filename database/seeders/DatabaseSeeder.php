@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\OrangTua;
 use App\Models\SuperAdmin;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -23,19 +24,29 @@ class DatabaseSeeder extends Seeder
         // 'password',
         // 'role',
         // 'status',
-        User::create([
-            "username"=> "admin",
-            "email"=> "admin@example.com",
-            "password"=> Hash::make("password123"),
-            "role"=> "super_admin",
-            "status"=> "1",
-        ]);
+        // User::create([
+        //     "username"=> "admin",
+        //     "email"=> "admin@example.com",
+        //     "password"=> Hash::make("password123"),
+        //     "role"=> "super_admin",
+        //     "status"=> "1",
+        // ]);
 
-        SuperAdmin::create([
-            "user_id"=> User::first()->id,
-            "name"=> "Admin",
-            "phone"=> "081234567890",
-            "jabatan"=> "Kepala Pondok",
+        // SuperAdmin::create([
+        //     "user_id"=> User::first()->id,
+        //     "name"=> "Admin",
+        //     "phone"=> "081234567890",
+        //     "jabatan"=> "Kepala Pondok",
+        // ]);
+
+        $this->call([
+            SuperAdminSeeder::class,
+            PondokSeeder::class,
+            AdminCabangSeeder::class,
+            GuruSeeder::class,
+            SantriSeeder::class,
+            OrangTuaSeeder::class,
+            KesehatanSantriSeeder::class
         ]);
 
     }

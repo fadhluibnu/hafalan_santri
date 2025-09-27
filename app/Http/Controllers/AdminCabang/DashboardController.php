@@ -4,6 +4,12 @@ namespace App\Http\Controllers\AdminCabang;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
+use App\Models\AdminCabang;
+use App\Models\Santri;
+use App\Models\Guru;
+use App\Models\JuzSantri; // pastikan nama model juz sesuai (sesuaikan jika berbeda)
 
 class DashboardController extends Controller
 {
@@ -12,7 +18,56 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        //
+        // Ambil pondok yang terkait dengan admin cabang yang sedang login
+        $adminCabang = AdminCabang::where('user_id', Auth::id())->first();
+        $pondokId = $adminCabang->pondok_id ?? null;
+
+        // Hitung jumlah santri / guru untuk pondok tersebut
+        $jumlahSantri = $pondokId ? Santri::where('pondok_id', $pondokId)->count() : Santri::count();
+        $jumlahGuru = $pondokId ? Guru::where('pondok_id', $pondokId)->count() : Guru::count();
+
+        // Hitung total juz sah (gabungkan ke santri pondok jika diperlukan)
+        $totalJuzSah = 0;
+        if (class_exists(JuzSantri::class)) {
+            $q = JuzSantri::where('status', 'sah');
+            if ($pondokId) {
+                $q->whereHas('santris', function ($qq) use ($pondokId) {
+                    $qq->where('pondok_id', $pondokId);
+                });
+            }
+            $totalJuzSah = $q->count();
+        }
+
+        // Ambil rekap hafalan terbaru (limit 10) dengan info santri
+        $rekap = [];
+        if (class_exists(JuzSantri::class)) {
+            $recent = JuzSantri::with('santris')
+                ->when($pondokId, function ($q) use ($pondokId) {
+                    $q->whereHas('santris', function ($qq) use ($pondokId) {
+                        $qq->where('pondok_id', $pondokId);
+                    });
+                })
+                ->orderBy('created_at', 'desc')
+                ->limit(10)
+                ->get();
+
+            $rekap = $recent->map(function ($r) {
+                return [
+                    'id' => $r->id,
+                    'nama' => $r->santris?->nama ?? null,
+                    'juz' => $r->nama ?? $r->juz ?? null,
+                    'status' => $r->status ?? null,
+                    'created_at' => $r->created_at?->toDateTimeString(),
+                ];
+            })->toArray();
+        }
+
+        return Inertia::render('AdminCabang/Dashboard', [
+            'jumlahSantri' => $jumlahSantri,
+            'jumlahGuru' => $jumlahGuru,
+            'totalJuzSah' => $totalJuzSah,
+            'rekapData' => $rekap,
+        ]);
     }
 
     /**

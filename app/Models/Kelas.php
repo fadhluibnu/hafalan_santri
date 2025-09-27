@@ -14,6 +14,8 @@ class Kelas extends Model
         'pondok_id',
         'nama',
         'wali_kelas_id',
+        'tingkat',
+        'kapasitas',
         'keterangan',
         'status',
     ];
@@ -26,5 +28,10 @@ class Kelas extends Model
     public function waliKelas()
     {
         return $this->belongsTo(Guru::class, 'wali_kelas_id');
+    }
+
+    public function santris()
+    {
+        return $this->hasMany(Santri::class, 'kelas_id');
     }
 }
