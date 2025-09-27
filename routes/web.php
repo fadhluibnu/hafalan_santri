@@ -98,23 +98,8 @@ Route::prefix('guru')
             return Inertia::render('Guru/Dashboard');
         })->name('dashboard');
 
-        Route::prefix('hafalan')->name('hafalan.')->group(function () {
-            Route::get('/', function () {
-                return Inertia::render('Guru/Hafalan/Index');
-            })->name('index');
-
-            Route::get('/create', function () {
-                return Inertia::render('Guru/Hafalan/Create');
-            })->name('create');
-
-            Route::get('/{id}', function ($id) {
-                return Inertia::render('Guru/Hafalan/Show', ['id' => $id]);
-            })->name('show');
-
-            Route::get('/{id}/edit', function ($id) {
-                return Inertia::render('Guru/Hafalan/Edit', ['id' => $id]);
-            })->name('edit');
-        });
+        // gunakan resource controller agar route names standard tersedia (index, create, store, show, edit, update, destroy)
+        Route::resource('hafalan', \App\Http\Controllers\Guru\HafalanController::class);
 
         // Laporan
         Route::get('/laporan', function () {

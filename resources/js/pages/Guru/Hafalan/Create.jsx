@@ -1,24 +1,44 @@
-import { Link } from '@inertiajs/react';
-import { useMemo } from 'react';
+import { Link, useForm } from '@inertiajs/react';
 import HafalanForm from '../components/HafalanForm';
 import Layout from '../components/Layout';
+import { route } from 'ziggy-js';
 
-const HafalanCreate = () => {
-    const santri = useMemo(
-        () => [
-            { id: 1, nama: 'Ahmad Fauzi', kelas: 'Juz 30' },
-            { id: 2, nama: 'Nur Aisyah', kelas: 'Juz 29' },
-        ],
-        [],
-    );
+const HafalanCreate = ({ classes, santrisByClass, gurus, currentGuruId }) => {
+    const { data, setData, post, processing, errors } = useForm({
+        kelas_id: '',
+        santri_id: '',
+        guru_id: currentGuruId || '',
+        tanggal_setor: '',
+        juz: '',
+        dari_surat: '',
+        dari_ayat: '',
+        sampai_surat: '',
+        sampai_ayat: '',
+        kategori: '',
+        nilai: '',
+        catatan: '',
+    });
 
-    const onSubmit = (payload) => {
-        alert(`Simpan setoran (dummy):\n${JSON.stringify(payload, null, 2)}`);
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        post(route('guru.hafalan.store'), {
+            onSuccess: () => {
+                // Redirect handled by controller
+            },
+            onError: (errors) => {
+                console.error('Submission errors:', errors);
+            },
+        });
     };
 
     return (
         <Layout title="Input Setoran Hafalan">
             <div className="space-y-4">
+                {errors.error && (
+                    <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">
+                        {errors.error}
+                    </div>
+                )}
                 <div className="flex items-center justify-between">
                     <h1 className="text-xl font-semibold text-gray-800">Input Setoran Hafalan</h1>
                     <Link href="/guru/hafalan" className="text-sm text-indigo-600 hover:underline">
@@ -26,7 +46,15 @@ const HafalanCreate = () => {
                     </Link>
                 </div>
                 <div className="rounded-lg bg-white p-4 shadow">
-                    <HafalanForm santriList={santri} onSubmit={onSubmit} />
+                    <HafalanForm
+                        formData={data}
+                        setFormData={setData}
+                        onSubmit={handleSubmit}
+                        processing={processing}
+                        classes={classes}
+                        santrisByClass={santrisByClass}
+                        gurus={gurus}
+                    />
                 </div>
             </div>
         </Layout>
