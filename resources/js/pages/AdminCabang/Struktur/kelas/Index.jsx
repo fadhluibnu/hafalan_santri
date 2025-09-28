@@ -96,7 +96,7 @@ const KelasIndex = () => {
     ];
 
     return (
-        <Layout title="Struktur - Kelas">
+        <Layout title="Penempatan Kelas">
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-gray-700">Daftar Kelas</h2>
