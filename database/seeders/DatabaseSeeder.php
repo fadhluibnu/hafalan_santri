@@ -40,6 +40,7 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         $this->call([
+            QuranSurahSeeder::class,
             SuperAdminSeeder::class,
             PondokSeeder::class,
             AdminCabangSeeder::class,

@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Faker\Factory as Faker;
 
 class SantriSeeder extends Seeder
 {
@@ -16,40 +17,51 @@ class SantriSeeder extends Seeder
     public function run(): void
     {
         $pondok = \App\Models\Pondok::first();
+        if (! $pondok) {
+            // jika belum ada pondok, buat satu sederhana
+            $pondok = \App\Models\Pondok::create([
+                'nama' => 'Pondok Default',
+                'alamat' => 'Alamat Pondok',
+            ]);
+        }
 
-        $user = User::create([
-            "username"=> "santri1",
-            "email"=> "santri1@example.com",
-            "password"=> Hash::make("password123"),
-            "role"=> "santri",
-            "status"=> 1,
-        ]);
+        $faker = Faker::create();
 
-        Santri::create([
-            "user_id"=> $user->id,
-            "pondok_id"=> $pondok->id,
-            "kelas_id"=> null, // abaikan kelas sesuai instruksi
-            "nama"=> "Santri Pertama",
-            "panggilan"=> "Santri",
-            "jenis_kelamin"=> "L",
-            "tempat_lahir"=> "Bandung",
-            "tanggal_lahir"=> "2005-01-01",
-            "status_mukim"=> "Mukim",
-            "kondisi"=> "Sehat",
-            "warga_negara"=> "Indonesia",
-            "kode_pos"=> "40123",
-            "alamat"=> "Jl. Santri No. 1",
-            "anak_ke"=> 1,
-            "jumlah_saudara"=> 2,
-            "status_anak"=> "Kandung",
-            "saudara_kandung"=> 2,
-            "saudara_tiri"=> 0,
-            "jarak_pondok"=> 2.5,
-            "telpon"=> "022-1234568",
-            "handphone"=> "081234567893",
-            "email"=> "santri1@example.com",
-            "hobi"=> "Membaca",
-            "foto"=> "santri_foto/hZgb0NPxgcoLpForDlT77M3VHlm2kp2CEtLqjlVU.jpg",
-        ]);
+        for ($i = 1; $i <= 10; $i++) {
+            $user = User::create([
+                "username" => "santri{$i}",
+                "email" => "santri{$i}@example.com",
+                "password" => Hash::make("password123"),
+                "role" => "santri",
+                "status" => 1,
+            ]);
+
+            Santri::create([
+                "user_id" => $user->id,
+                "pondok_id" => $pondok->id,
+                "kelas_id" => null,
+                "nama" => "Santri {$i}",
+                "panggilan" => "Santri",
+                "jenis_kelamin" => ($i % 2 === 0) ? "P" : "L",
+                "tempat_lahir" => $faker->city,
+                "tanggal_lahir" => $faker->date('Y-m-d', '2008-12-31'),
+                "status_mukim" => "Mukim",
+                "kondisi" => "Sehat",
+                "warga_negara" => "Indonesia",
+                "kode_pos" => $faker->postcode,
+                "alamat" => $faker->address,
+                "anak_ke" => $faker->numberBetween(1,4),
+                "jumlah_saudara" => $faker->numberBetween(0,6),
+                "status_anak" => "Kandung",
+                "saudara_kandung" => $faker->numberBetween(0,4),
+                "saudara_tiri" => $faker->numberBetween(0,2),
+                "jarak_pondok" => $faker->randomFloat(1, 0.5, 50),
+                "telpon" => $faker->numerify('0##-#######'),
+                "handphone" => $faker->numerify('08#########'),
+                "email" => "santri{$i}@example.com",
+                "hobi" => $faker->randomElement(['Membaca','Olahraga','Mengaji','Menulis']),
+                "foto" => "santri_foto/EcutsyZsaAOmjgknrNCrW4YyZyeOprNr1jr608MO.png",
+            ]);
+        }
     }
 }

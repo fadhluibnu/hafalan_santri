@@ -40,5 +40,14 @@ class Hafalan extends Model
         return $this->belongsTo(Kelas::class, 'kelas_id');
     }
 
+    public function dariSurah()
+    {
+        return $this->belongsTo(QuranSurah::class, 'dari_surat');
+    }   
+
+    public function sampaiSurah()
+    {
+        return $this->belongsTo(QuranSurah::class, 'sampai_surat');
+    }
 
 }

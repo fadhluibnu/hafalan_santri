@@ -17,7 +17,8 @@ class GuruSeeder extends Seeder
     {
         $pondok = \App\Models\Pondok::first();
 
-        $user = User::create([
+        // Guru 1
+        $user1 = User::create([
             "username"=> "guru1",
             "email"=> "guru1@example.com",
             "password"=> Hash::make("password123"),
@@ -26,7 +27,7 @@ class GuruSeeder extends Seeder
         ]);
 
         Guru::create([
-            "user_id"=> $user->id,
+            "user_id"=> $user1->id,
             "pondok_id"=> $pondok->id,
             "nip"=> "198001012005011001",
             "nama"=> "Ustadz Ahmad",
@@ -44,6 +45,36 @@ class GuruSeeder extends Seeder
             "tanggal_kerja"=> "2010-01-01",
             "non_aktif"=> false,
             "keterangan"=> "Guru senior",
+        ]);
+
+        // Guru 2
+        $user2 = User::create([
+            "username"=> "guru2",
+            "email"=> "guru2@example.com",
+            "password"=> Hash::make("password123"),
+            "role"=> "guru",
+            "status"=> 1,
+        ]);
+
+        Guru::create([
+            "user_id"=> $user2->id,
+            "pondok_id"=> $pondok->id,
+            "nip"=> "198502022010011002",
+            "nama"=> "Ustadzah Siti",
+            "gelar_awal"=> null,
+            "gelar_akhir"=> "M.Pd",
+            "tempat_lahir"=> "Jakarta",
+            "tanggal_lahir"=> "1985-02-02",
+            "jenis_kelamin"=> "P",
+            "status_menikah"=> "Menikah",
+            "alamat"=> "Jl. Guru No. 2",
+            "no_identitas"=> "3202020202020002",
+            "no_telpon"=> "021-1234567",
+            "no_handphone"=> "081234567893",
+            "email"=> "guru2@example.com",
+            "tanggal_kerja"=> "2012-05-01",
+            "non_aktif"=> false,
+            "keterangan"=> "Guru pengajar utama",
         ]);
     }
 }

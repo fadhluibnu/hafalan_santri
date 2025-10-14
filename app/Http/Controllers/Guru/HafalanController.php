@@ -12,6 +12,7 @@ use App\Models\Pondok;
 use App\Models\Kelas;
 use App\Models\Santri;
 use App\Models\Hafalan;
+use App\Models\QuranSurah;
 
 class HafalanController extends Controller
 {
@@ -24,7 +25,7 @@ class HafalanController extends Controller
         $pondokId = $guru->pondok_id ?? null;
 
         // Ambil data hafalan yang terkait dengan pondok guru
-        $hafalan = Hafalan::with(['santri', 'kelas', 'guru'])
+        $hafalan = Hafalan::with(['santri', 'kelas', 'guru', 'dariSurah', 'sampaiSurah'])
             ->whereHas('kelas', function ($query) use ($pondokId) {
                 $query->where('pondok_id', $pondokId);
             })
@@ -38,6 +39,10 @@ class HafalanController extends Controller
                     'guru' => $h->guru->nama,
                     'tanggal_setor' => $h->tanggal_setor,
                     'juz' => $h->juz,
+                    'dari_surat' => $h->dariSurah->name,
+                    'dari_ayat' => $h->dari_ayat,
+                    'sampai_surat' => $h->sampaiSurah->name,
+                    'sampai_ayat' => $h->sampai_ayat,
                     'kategori' => $h->kategori,
                     'nilai' => $h->nilai,
                 ];
@@ -79,10 +84,14 @@ class HafalanController extends Controller
         // Ambil daftar guru di pondok agar bisa memilih (biasanya guru sendiri sudah default)
         $gurus = $pondokId ? Guru::where('pondok_id', $pondokId)->select('id', 'nama')->orderBy('nama')->get() : collect();
 
+        // Ambil daftar surah Quran untuk select
+        $surahs = QuranSurah::select('id', 'name', 'jumlah_ayat')->orderBy('id')->get();
+
         return Inertia::render('Guru/Hafalan/Create', [
             'classes' => $classes,
             'santrisByClass' => $santrisByClass,
             'gurus' => $gurus,
+            'surahs' => $surahs,
             'currentGuruId' => $guru->id ?? null,
         ]);
     }
@@ -95,20 +104,31 @@ class HafalanController extends Controller
 
         DB::beginTransaction();
         try {
-        $validated = $request->validate([
-            'kelas_id' => 'required|integer|exists:kelas,id',
-            'santri_id' => 'required|integer|exists:santris,id',
-            'guru_id' => 'required|integer|exists:gurus,id',
-            'tanggal_setor' => 'required|date',
-            'juz' => 'required|integer|min:1',
-            'dari_surat' => 'required|string|max:255',
-            'dari_ayat' => 'required|integer|min:0',
-            'sampai_surat' => 'required|string|max:255',
-            'sampai_ayat' => 'required|integer|min:0',
-            'kategori' => 'required|string|max:100',
-            'nilai' => 'required|string|max:5',
-            'catatan' => 'nullable|string',
-        ]);
+            $validated = $request->validate([
+                'kelas_id' => 'required|integer|exists:kelas,id',
+                'santri_id' => 'required|integer|exists:santris,id',
+                'guru_id' => 'required|integer|exists:gurus,id',
+                'tanggal_setor' => 'required|date',
+                'juz' => 'required|integer|min:1',
+                'dari_surat' => 'required|integer|exists:quran_surahs,id',
+                'dari_ayat' => 'required|integer|min:1',
+                'sampai_surat' => 'required|integer|exists:quran_surahs,id',
+                'sampai_ayat' => 'required|integer|min:1',
+                'kategori' => 'required|string|max:100',
+                'nilai' => 'required|string|max:5',
+                'catatan' => 'nullable|string',
+            ]);
+
+            // Additional validation: Ensure ayat does not exceed jumlah_ayat for selected surah
+            $dariSurah = QuranSurah::findOrFail($validated['dari_surat']);
+            if ($validated['dari_ayat'] > $dariSurah->jumlah_ayat) {
+                throw new \Exception('Dari ayat melebihi jumlah ayat surah yang dipilih.');
+            }
+            $sampaiSurah = QuranSurah::findOrFail($validated['sampai_surat']);
+            if ($validated['sampai_ayat'] > $sampaiSurah->jumlah_ayat) {
+                throw new \Exception('Sampai ayat melebihi jumlah ayat surah yang dipilih.');
+            }
+
             $guru = Guru::findOrFail($validated['guru_id']);
             // Pastikan guru yang melakukan action berada di pondok yang sama dengan santri/kelas
             $loggedGuru = Guru::where('user_id', Auth::id())->first();

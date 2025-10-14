@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
-import { useForm } from '@inertiajs/react';
 import FormInput from '../../SuperAdmin/components/FormInput';
 
 // This form aligns with App\Models\Hafalan::$fillable
-const HafalanForm = ({ formData, setFormData, onSubmit, processing, classes = [], santrisByClass = {}, gurus = [], currentGuruId }) => {
+const HafalanForm = ({ formData, setFormData, onSubmit, processing, classes = [], santrisByClass = {}, gurus = [], surahs = [] }) => {
 	const kelasOptions = classes.map((c) => ({ value: c.id, label: c.nama }));
 	const guruOptions = gurus.map((g) => ({ value: g.id, label: g.nama }));
+	const surahOptions = surahs.map((s) => ({ value: s.id, label: s.name }));
 
 	const santriOptions = useMemo(() => {
 		const kelasId = formData.kelas_id;
@@ -13,11 +13,35 @@ const HafalanForm = ({ formData, setFormData, onSubmit, processing, classes = []
 		return santrisByClass[kelasId].map((s) => ({ value: s.id, label: `${s.nama} (${s.nis ?? 'NIS'})` }));
 	}, [formData.kelas_id, santrisByClass]);
 
+	const dariAyatOptions = useMemo(() => {
+		const surahId = formData.dari_surat;
+		if (!surahId) return [];
+		const surah = surahs.find((s) => s.id == surahId);
+		if (!surah) return [];
+		return Array.from({ length: surah.jumlah_ayat }, (_, i) => ({ value: i + 1, label: (i + 1).toString() }));
+	}, [formData.dari_surat, surahs]);
+
+	const sampaiAyatOptions = useMemo(() => {
+		const surahId = formData.sampai_surat;
+		if (!surahId) return [];
+		const surah = surahs.find((s) => s.id == surahId);
+		if (!surah) return [];
+		return Array.from({ length: surah.jumlah_ayat }, (_, i) => ({ value: i + 1, label: (i + 1).toString() }));
+	}, [formData.sampai_surat, surahs]);
+
 	const set = (name, value) => {
 		setFormData(name, value);
 		if (name === 'kelas_id') {
 			// reset santri ketika kelas berubah
 			setFormData('santri_id', '');
+		}
+		if (name === 'dari_surat') {
+			// reset dari_ayat ketika dari_surat berubah
+			setFormData('dari_ayat', '');
+		}
+		if (name === 'sampai_surat') {
+			// reset sampai_ayat ketika sampai_surat berubah
+			setFormData('sampai_ayat', '');
 		}
 	};
 
@@ -81,36 +105,42 @@ const HafalanForm = ({ formData, setFormData, onSubmit, processing, classes = []
 					required
 				/>
 				<FormInput
+					type="select"
 					label="Dari Surat"
 					name="dari_surat"
 					value={formData.dari_surat}
 					onChange={(e) => set('dari_surat', e.target.value)}
-					placeholder="Contoh: An-Naba"
+					options={surahOptions}
 					required
 				/>
 				<FormInput
-					type="number"
+					type="select"
 					label="Dari Ayat"
 					name="dari_ayat"
 					value={formData.dari_ayat}
 					onChange={(e) => set('dari_ayat', e.target.value)}
+					options={dariAyatOptions}
 					required
+					disabled={!formData.dari_surat}
 				/>
 				<FormInput
+					type="select"
 					label="Sampai Surat"
 					name="sampai_surat"
 					value={formData.sampai_surat}
 					onChange={(e) => set('sampai_surat', e.target.value)}
-					placeholder="Contoh: An-Naba"
+					options={surahOptions}
 					required
 				/>
 				<FormInput
-					type="number"
+					type="select"
 					label="Sampai Ayat"
 					name="sampai_ayat"
 					value={formData.sampai_ayat}
 					onChange={(e) => set('sampai_ayat', e.target.value)}
+					options={sampaiAyatOptions}
 					required
+					disabled={!formData.sampai_surat}
 				/>
 				<FormInput
 					type="select"
@@ -151,34 +181,5 @@ const HafalanForm = ({ formData, setFormData, onSubmit, processing, classes = []
 		</form>
 	);
 };
-
-// export default HafalanForm;
-// 					name="nilai"
-// 					value={form.data.nilai}
-// 					onChange={(e) => set('nilai', e.target.value)}
-// 					options={nilaiOptions}
-// 					required
-// 				/>
-// 			</div>
-// 			<FormInput
-// 				type="textarea"
-// 				label="Catatan"
-// 				name="catatan"
-// 				value={form.data.catatan}
-// 				onChange={(e) => set('catatan', e.target.value)}
-// 				placeholder="Catatan tambahan"
-// 			/>
-// 			<div className="flex items-center justify-end space-x-2">
-// 				<button
-// 					type="submit"
-// 					disabled={form.processing}
-// 					className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
-// 				>
-// 					{form.processing ? 'Menyimpan...' : 'Simpan'}
-// 				</button>
-// 			</div>
-// 		</form>
-// 	);
-// };
 
 export default HafalanForm;

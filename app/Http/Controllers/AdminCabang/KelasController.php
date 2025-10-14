@@ -277,7 +277,7 @@ class KelasController extends Controller
     /**
      * Show manage santri page for a class.
      */
-    public function manageSantri(Request $request, string $id)
+    public function manageSantri(string $id)
     {
         $kelas = Kelas::findOrFail($id);
 
@@ -288,37 +288,56 @@ class KelasController extends Controller
             abort(403, 'Anda tidak berwenang mengakses halaman ini.');
         }
 
-        // Ambil semua santri di pondok tersebut (minimal fields) dan latest juz (jika ada)
-        $santris = $pondokId
+        // Ambil santri yang sudah ditempatkan di kelas ini
+        $assignedSantris = $pondokId
             ? Santri::with(['jus' => function ($q) { $q->orderBy('created_at', 'desc'); }])
                 ->where('pondok_id', $pondokId)
+                ->where('kelas_id', $kelas->id)
                 ->select('id', 'nama', 'jenis_kelamin', 'kelas_id')
                 ->orderBy('nama')
                 ->get()
             : collect();
 
-        $assignedIds = $santris->filter(fn($s) => $s->kelas_id == $kelas->id)->pluck('id')->toArray();
+        // Ambil santri yang belum ditempatkan pada kelas manapun (available)
+        $availableSantris = $pondokId
+            ? Santri::with(['jus' => function ($q) { $q->orderBy('created_at', 'desc'); }])
+                ->where('pondok_id', $pondokId)
+                ->whereNull('kelas_id')
+                ->select('id', 'nama', 'jenis_kelamin', 'kelas_id')
+                ->orderBy('nama')
+                ->get()
+            : collect();
 
-        // Transform santri untuk frontend (ambil latest juz label jika ada)
-        $santrisTransformed = $santris->map(function ($s) {
-            $latestJuz = $s->jus->first();
-            return [
-                'id' => $s->id,
-                'nis' => $s->nis ?? null,
-                'nama' => $s->nama,
-                'jenis_kelamin' => $s->jenis_kelamin,
-                'kelas_id' => $s->kelas_id,
-                'juzTerakhir' => $latestJuz?->nama ?? $latestJuz?->juz ?? null,
-            ];
-        })->values();
+        // Transform untuk frontend (ambil latest juz label jika ada)
+        $transform = function ($collection) {
+            return $collection->map(function ($s) {
+                $latestJuz = $s->jus->first();
+                return [
+                    'id' => $s->id,
+                    'nis' => $s->nis ?? null,
+                    'nama' => $s->nama,
+                    'jenis_kelamin' => $s->jenis_kelamin,
+                    'kelas_id' => $s->kelas_id,
+                    'juzTerakhir' => $latestJuz?->nama ?? $latestJuz?->juz ?? null,
+                ];
+            })->values();
+        };
+
+        $assignedTransformed = $transform($assignedSantris);
+        $availableTransformed = $transform($availableSantris);
+
+        // Ambil daftar id santri yang memang sudah ditempatkan pada kelas ini
+        $assignedIds = $assignedTransformed->pluck('id')->toArray();
 
         return Inertia::render('AdminCabang/Struktur/kelas/ManageSantri', [
             'kelas' => [
                 'id' => $kelas->id,
                 'nama' => $kelas->nama,
                 'tingkat' => $kelas->tingkat,
+                'kapasitas' => $kelas->kapasitas, // tambahkan kapasitas supaya frontend bisa memvalidasi
             ],
-            'santris' => $santrisTransformed,
+            'assignedSantris' => $assignedTransformed,
+            'availableSantris' => $availableTransformed,
             'assignedIds' => $assignedIds,
         ]);
     }
@@ -351,20 +370,39 @@ class KelasController extends Controller
 
             // Pastikan semua incoming santri memang milik pondok yang sama
             if (!empty($incoming)) {
-                $validCount = Santri::whereIn('id', $incoming)->where('pondok_id', $pondokId)->count();
+                $validCount = Santri::query()->whereIn('id', $incoming)->where('pondok_id', $pondokId)->count();
                 if ($validCount !== count($incoming)) {
                     throw new \Exception('Beberapa santri tidak ditemukan di pondok Anda atau tidak valid.');
+                }
+
+                // Pastikan incoming santri adalah SANTRI YANG TIDAK ADA KELAS (NULL) ATAU SUDAH ADA DI KELAS INI
+                $permittedCount = Santri::query()
+                    ->whereIn('id', $incoming)
+                    ->where('pondok_id', $pondokId)
+                    ->where(function ($q) use ($kelas) {
+                        $q->whereNull('kelas_id')
+                          ->orWhere('kelas_id', $kelas->id);
+                    })->count();
+
+                if ($permittedCount !== count($incoming)) {
+                    throw new \Exception('Beberapa santri sudah ditempatkan di kelas lain dan tidak dapat dipindahkan ke kelas ini.');
+                }
+
+                // Pastikan tidak melebihi kapasitas kelas (jika kapasitas di-set)
+                if (!is_null($kelas->kapasitas) && count($incoming) > $kelas->kapasitas) {
+                    throw new \Exception('Jumlah santri melebihi kapasitas kelas (' . $kelas->kapasitas . ').');
                 }
             }
 
             // Lepaskan santri yang sebelumnya pada kelas ini tapi tidak ada di incoming
-            Santri::where('kelas_id', $kelas->id)
+            Santri::query()->where('kelas_id', $kelas->id)
                 ->whereNotIn('id', $incoming)
                 ->update(['kelas_id' => null]);
 
-            // Set kelas_id untuk incoming santri
+            // Set kelas_id untuk incoming santri (hanya santri pondok yang sama dan unassigned atau already-in-this-class)
             if (!empty($incoming)) {
-                Santri::whereIn('id', $incoming)
+                Santri::query()
+                    ->whereIn('id', $incoming)
                     ->where('pondok_id', $pondokId)
                     ->update(['kelas_id' => $kelas->id]);
             }

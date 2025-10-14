@@ -61,7 +61,7 @@ Route::prefix('admin-cabang')
         // Tambahkan route untuk manage santri (penempatan)
         Route::get('struktur/kelas/{id}/santri', [KelasController::class, 'manageSantri'])
             ->name('struktur.kelas.manage_santri');
-        Route::post('struktur/kelas/{id}/santri', [KelasController::class, 'storeSantri'])
+        Route::post('struktur/kelas/{id}/santri', [KelasController::class, 'storeSanTri'])
             ->name('struktur.kelas.manage_santri.store');
     });
     //         })->name('show');
@@ -101,8 +101,8 @@ Route::prefix('guru')
         // gunakan resource controller agar route names standard tersedia (index, create, store, show, edit, update, destroy)
         Route::resource('hafalan', \App\Http\Controllers\Guru\HafalanController::class);
 
-        // Laporan
-        Route::get('/laporan', function () {
-            return Inertia::render('Guru/Laporan');
-        })->name('laporan');
-    });
+        // Laporan - gunakan controller agar dinamis
+        Route::get('/laporan', [\App\Http\Controllers\Guru\LaporanController::class, 'index'])->name('laporan');
+
+        });
+    // });
