@@ -3,9 +3,10 @@ import { Link, useForm } from '@inertiajs/react';
 import FormInput from '../../../SuperAdmin/components/FormInput';
 import Layout from '../../components/Layout';
 
-const KelasCreate = ({ ustadzs = [] }) => {
+const KelasCreate = ({ ustadzs = [], tahunAjarans = [], activeTahunAjaranId }) => {
     const { data, setData, post, processing, errors } = useForm({
         nama: '',
+        tahun_ajaran_id: activeTahunAjaranId || '',
         tingkat: 'Juz 30',
         wali_kelas_id: '',
         kapasitas: 20,
@@ -22,6 +23,7 @@ const KelasCreate = ({ ustadzs = [] }) => {
     ];
 
     const ustadzOptions = [{ value: '', label: '— Pilih Wali Kelas —' }, ...ustadzs.map(u => ({ value: u.id, label: u.nama }))];
+    const tahunAjaranOptions = [{ value: '', label: '— Pilih Tahun Ajaran —' }, ...tahunAjarans.map(t => ({ value: t.id, label: `${t.nama}${t.is_active ? ' (Aktif)' : ''}` }))];
 
     const onChange = (e) => {
         const { name, value, type } = e.target;
@@ -42,8 +44,23 @@ const KelasCreate = ({ ustadzs = [] }) => {
                         {errors.error}
                     </div>
                 )}
+                {tahunAjarans.length === 0 && (
+                    <div className="mb-4 p-4 bg-yellow-100 text-yellow-700 rounded">
+                        Belum ada tahun ajaran. Silakan buat tahun ajaran terlebih dahulu.
+                    </div>
+                )}
                 <form onSubmit={onSubmit}>
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <FormInput
+                            label="Tahun Ajaran"
+                            name="tahun_ajaran_id"
+                            type="select"
+                            value={data.tahun_ajaran_id}
+                            onChange={onChange}
+                            options={tahunAjaranOptions}
+                            required
+                            error={errors.tahun_ajaran_id}
+                        />
                         <FormInput
                             label="Nama Kelas"
                             name="nama"

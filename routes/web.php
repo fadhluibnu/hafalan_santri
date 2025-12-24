@@ -39,6 +39,9 @@ Route::prefix('admin-cabang')
     ->group(function () {
         // Gunakan controller agar data dinamis dari DashboardController@index tersedia di view
         Route::get('/', [\App\Http\Controllers\AdminCabang\DashboardController::class, 'index'])->name('dashboard');
+        
+        // Set tahun ajaran session
+        Route::post('/set-tahun-ajaran', [\App\Http\Controllers\TahunAjaranSessionController::class, 'setSelected'])->name('set-tahun-ajaran');
 
         // Santri Excel export/import routes (harus sebelum resource route)
         Route::get('santri/export', [SantriController::class, 'export'])->name('santri.export');
@@ -57,6 +60,11 @@ Route::prefix('admin-cabang')
 
         // Ustadz Routes (menggantikan Guru)
         Route::resource('ustadz', \App\Http\Controllers\AdminCabang\UstadzController::class);
+
+        // Tahun Ajaran Routes
+        Route::resource('tahun-ajaran', \App\Http\Controllers\AdminCabang\TahunAjaranController::class);
+        Route::post('tahun-ajaran/{id}/set-active', [\App\Http\Controllers\AdminCabang\TahunAjaranController::class, 'setActive'])->name('tahun-ajaran.set-active');
+        Route::post('tahun-ajaran/{id}/close', [\App\Http\Controllers\AdminCabang\TahunAjaranController::class, 'close'])->name('tahun-ajaran.close');
 
         // Ganti blok closure sebelumnya dengan resource controller untuk struktur/kelas
         Route::resource('struktur/kelas', KelasController::class)

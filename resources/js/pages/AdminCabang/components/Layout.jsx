@@ -1,8 +1,9 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link, usePage, router, Head } from '@inertiajs/react';
 import { useState } from 'react';
+import { route } from 'ziggy-js';
 
 export default function Layout({ children, title = 'Admin Cabang' }) {
-    const { auth } = usePage().props;
+    const { auth, tahunAjaran, pageTitle } = usePage().props;
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 
@@ -12,10 +13,23 @@ export default function Layout({ children, title = 'Admin Cabang' }) {
         setIsProfileDropdownOpen(!isProfileDropdownOpen);
     };
 
+    const handleTahunAjaranChange = (e) => {
+        const tahunAjaranId = e.target.value;
+        if (tahunAjaranId) {
+            router.post(route('admin-cabang.set-tahun-ajaran'), {
+                tahun_ajaran_id: tahunAjaranId
+            }, {
+                preserveScroll: true,
+            });
+        }
+    };
+
     return (
-        <div className="flex h-screen bg-gray-200">
-            {/* Sidebar */}
-            <div className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white shadow-md transition-all duration-300 ease-in-out`}>
+        <>
+            <Head title={title ? `${title} | ${pageTitle}` : pageTitle} />
+            <div className="flex h-screen bg-gray-200">
+                {/* Sidebar */}
+            <div className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white shadow-md transition-all duration-300 ease-in-out flex flex-col`}>
                 <div className={`p-4 flex items-center ${isSidebarOpen ? 'justify-between' : 'justify-center'}`}>
                     {isSidebarOpen ? (
                         <img src="/img/logo-pppa.png" alt="Logo" className="h-10 w-auto mx-auto" />
@@ -39,7 +53,25 @@ export default function Layout({ children, title = 'Admin Cabang' }) {
                     </button>
                 </div>
 
-                <nav className="mt-6">
+                {/* Tahun Ajaran Filter */}
+                {isSidebarOpen && tahunAjaran?.list?.length > 0 && (
+                    <div className="px-4 py-2 border-b border-gray-200">
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Tahun Ajaran</label>
+                        <select
+                            value={tahunAjaran.selected_id || ''}
+                            onChange={handleTahunAjaranChange}
+                            className="w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                        >
+                            {tahunAjaran.list.map((ta) => (
+                                <option key={ta.id} value={ta.id}>
+                                    {ta.nama} {ta.is_active ? '(Aktif)' : ''}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
+
+                <nav className="mt-4 flex-1">
                     <div className="px-4 py-2">
                         <Link
                             href="/admin-cabang"
@@ -88,6 +120,18 @@ export default function Layout({ children, title = 'Admin Cabang' }) {
                                 />
                             </svg>
                             {isSidebarOpen && <span>Ustadz</span>}
+                        </Link>
+                    </div>
+                    <div className="px-4 py-2">
+                        <Link
+                            href="/admin-cabang/tahun-ajaran"
+                            className={`flex items-center py-2 px-4 text-gray-700 hover:bg-green-100 hover:text-green-700 rounded-md transition duration-150 ease-in-out ${isSidebarOpen ? 'justify-start' : 'justify-center'}`}
+                            title="Tahun Ajaran"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${isSidebarOpen ? 'mr-3' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            {isSidebarOpen && <span className='font-semibold text-md'>Tahun Ajaran</span>}
                         </Link>
                     </div>
                     <div className="px-4 py-2">
@@ -194,6 +238,7 @@ export default function Layout({ children, title = 'Admin Cabang' }) {
                 </div>
             </div>
         </div>
+        </>
     );
 }
 

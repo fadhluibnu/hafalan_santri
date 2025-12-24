@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\AdminCabang;
 use App\Models\Ustadz;
+use App\Models\TahunAjaran;
 use App\Models\Santri;
 
 class KelasController extends Controller
@@ -23,12 +24,26 @@ class KelasController extends Controller
         $adminCabang = AdminCabang::where('user_id', Auth::id())->first();
         $pondokId = $adminCabang->pondok_id ?? null;
 
+        // Get selected tahun ajaran from session
+        $selectedTahunAjaranId = $request->session()->get('selected_tahun_ajaran_id');
+        
+        // If no tahun ajaran selected, try to get the active one
+        if (!$selectedTahunAjaranId && $pondokId) {
+            $activeTahunAjaran = TahunAjaran::where('pondok_id', $pondokId)->where('is_active', true)->first();
+            $selectedTahunAjaranId = $activeTahunAjaran?->id;
+        }
+
         $q = $request->input('q');
 
-        $query = Kelas::with('waliKelas')->withCount('santris');
+        $query = Kelas::with('waliKelas', 'tahunAjaran')->withCount('santris');
 
         if ($pondokId) {
             $query->where('pondok_id', $pondokId);
+        }
+
+        // Filter by selected tahun ajaran
+        if ($selectedTahunAjaranId) {
+            $query->where('tahun_ajaran_id', $selectedTahunAjaranId);
         }
 
         if ($q) {
@@ -50,6 +65,7 @@ class KelasController extends Controller
                 'id' => $k->id,
                 'nama' => $k->nama,
                 'tingkat' => $k->tingkat,
+                'tahun_ajaran' => $k->tahunAjaran?->nama,
                 'wali_kelas' => $k->waliKelas?->nama,
                 'wali_kelas_id' => $k->wali_kelas_id,
                 'kapasitas' => $k->kapasitas,
@@ -75,8 +91,14 @@ class KelasController extends Controller
         // Ambil daftar ustadz untuk pondok tersebut (id + nama)
         $ustadzs = $pondokId ? Ustadz::where('pondok_id', $pondokId)->select('id', 'nama')->orderBy('nama')->get() : collect();
 
+        // Ambil daftar tahun ajaran aktif
+        $tahunAjarans = $pondokId ? TahunAjaran::where('pondok_id', $pondokId)->where('status', 'aktif')->orderBy('tanggal_mulai', 'desc')->get() : collect();
+        $activeTahunAjaran = TahunAjaran::getActiveForPondok($pondokId);
+
         return Inertia::render('AdminCabang/Struktur/kelas/Create', [
             'ustadzs' => $ustadzs,
+            'tahunAjarans' => $tahunAjarans,
+            'activeTahunAjaranId' => $activeTahunAjaran?->id,
         ]);
     }
 
@@ -87,6 +109,7 @@ class KelasController extends Controller
     {
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
+            'tahun_ajaran_id' => 'required|exists:tahun_ajarans,id',
             'tingkat' => 'nullable|string|max:50',
             'wali_kelas_id' => 'nullable|exists:ustadzs,id',
             'kapasitas' => 'nullable|integer|min:1',
@@ -101,6 +124,7 @@ class KelasController extends Controller
 
             $kelas = Kelas::create([
                 'pondok_id' => $pondokId,
+                'tahun_ajaran_id' => $validated['tahun_ajaran_id'],
                 'nama' => $validated['nama'],
                 'tingkat' => $validated['tingkat'] ?? null,
                 'kapasitas' => $validated['kapasitas'] ?? null,

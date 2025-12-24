@@ -35,6 +35,15 @@ class Santri extends Model
         'email',
         'hobi',
         'foto',
+        'status_santri',
+        'tanggal_masuk_pondok',
+        'tanggal_lulus',
+    ];
+
+    protected $casts = [
+        'tanggal_lahir' => 'date',
+        'tanggal_masuk_pondok' => 'date',
+        'tanggal_lulus' => 'date',
     ];
 
     /**
@@ -97,4 +106,37 @@ class Santri extends Model
     {
         return $this->hasMany(JuzSantri::class, 'santri_id');
     }
+
+    /**
+     * Relasi ke SantriKelas (histori penempatan kelas)
+     */
+    public function santriKelas()
+    {
+        return $this->hasMany(SantriKelas::class);
+    }
+
+    /**
+     * Get penempatan kelas aktif saat ini
+     */
+    public function kelasAktif()
+    {
+        return $this->santriKelas()->where('status', 'aktif')->with('kelas')->first();
+    }
+
+    /**
+     * Scope untuk santri aktif
+     */
+    public function scopeAktif($query)
+    {
+        return $query->where('status_santri', 'aktif');
+    }
+
+    /**
+     * Scope untuk alumni
+     */
+    public function scopeAlumni($query)
+    {
+        return $query->whereIn('status_santri', ['lulus', 'alumni']);
+    }
 }
+

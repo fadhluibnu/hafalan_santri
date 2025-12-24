@@ -1,8 +1,8 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link, usePage, Head } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function Layout({ children, title }) {
-    const { auth } = usePage().props;
+    const { auth, pageTitle } = usePage().props;
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 
@@ -15,16 +15,18 @@ export default function Layout({ children, title }) {
     };
 
     return (
-        <div className="flex h-screen bg-gray-100">
+        <>
+            <Head title={title ? `${title} | ${pageTitle}` : pageTitle} />
+            <div className="flex h-screen bg-gray-200">
             {/* Sidebar */}
-            <div className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white shadow-md transition-all duration-300 ease-in-out`}>
-                <div className="flex items-center justify-between p-4">
+            <div className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white shadow-md transition-all duration-300 ease-in-out flex flex-col`}>
+                <div className={`p-4 flex items-center ${isSidebarOpen ? 'justify-between' : 'justify-center'}`}>
                     {isSidebarOpen ? (
-                        <span className="text-xl font-semibold text-gray-800">Hafalan Santri</span>
+                        <img src="/img/logo-pppa.png" alt="Logo" className="h-10 w-auto mx-auto" />
                     ) : (
-                        <span className="text-xl font-semibold text-gray-800">HS</span>
+                        <img src="/img/logo-pppa.png" alt="Logo" className="h-10 w-auto mx-auto hidden" />
                     )}
-                    <button onClick={toggleSidebar} className="rounded-full p-1 hover:bg-gray-100">
+                    <button onClick={toggleSidebar} className="p-1 rounded-full hover:bg-gray-100">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className="h-6 w-6 text-gray-600"
@@ -41,7 +43,7 @@ export default function Layout({ children, title }) {
                     </button>
                 </div>
 
-                <nav className="mt-6">
+                <nav className="mt-4 flex-1">
                     <div className="px-4 py-2">
                         <Link
                             href="/super-admin/"
@@ -188,5 +190,6 @@ export default function Layout({ children, title }) {
                 </div>
             </div>
         </div>
+        </>
     );
 }
