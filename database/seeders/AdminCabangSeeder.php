@@ -20,7 +20,7 @@ class AdminCabangSeeder extends Seeder
 
         $user = User::create([
             "username"=> "admincabang",
-            "email"=> "admincabang@example.com",
+            "email"=> "admincabang@gmail.com",
             "password"=> Hash::make("password123"),
             "role"=> "admin_cabang",
             "status"=> 1,

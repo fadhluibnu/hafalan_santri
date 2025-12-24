@@ -41,6 +41,28 @@ class HandleInertiaRequests extends Middleware
 
         $ziggy = new Ziggy($group = null, $request->url());
 
+        // Get user's display name from relationship based on role
+        $user = $request->user();
+        $displayName = null;
+        
+        if ($user) {
+            switch ($user->role) {
+                case 'ustadz':
+                    $ustadz = \App\Models\Ustadz::where('user_id', $user->id)->first();
+                    $displayName = $ustadz?->nama ?? $user->username;
+                    break;
+                case 'admin_cabang':
+                    $adminCabang = \App\Models\AdminCabang::where('user_id', $user->id)->first();
+                    $displayName = $adminCabang?->name ?? $user->username;
+                    break;
+                case 'super_admin':
+                    $superAdmin = \App\Models\SuperAdmin::where('user_id', $user->id)->first();
+                    $displayName = $superAdmin?->name ?? $user->username;
+                    break;
+                default:
+                    $displayName = $user->username;
+            }
+        }
 
         return [
             ...parent::share($request),
@@ -52,7 +74,7 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn() => $request->session()->get('error'),
             ],
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user ? array_merge($user->toArray(), ['name' => $displayName]) : null,
             ],
         ];
     }

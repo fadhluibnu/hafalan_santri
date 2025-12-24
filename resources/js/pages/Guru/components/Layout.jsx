@@ -1,11 +1,17 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function Layout({ children, title }) {
+    const { auth } = usePage().props;
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen);
+    };
+
+    const toggleProfileDropdown = () => {
+        setIsProfileDropdownOpen(!isProfileDropdownOpen);
     };
 
     return (
@@ -120,12 +126,69 @@ export default function Layout({ children, title }) {
 
             {/* Main Content */}
             <div className="flex-1 overflow-auto">
-                <div className="p-6">
-                    {/* Header */}
-                    <div className="mb-8">
+                {/* Top Navbar */}
+                <div className="bg-white shadow-sm border-b border-gray-200">
+                    <div className="flex items-center justify-between px-6 py-4">
+                        {/* Header Title */}
                         <h1 className="text-2xl font-semibold text-gray-800">{title}</h1>
-                    </div>
 
+                        {/* Profile Section */}
+                        <div className="relative">
+                            <button
+                                onClick={toggleProfileDropdown}
+                                className="flex items-center space-x-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition duration-150 ease-in-out"
+                            >
+                                {/* Avatar */}
+                                <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white font-semibold">
+                                    {auth?.user?.name?.charAt(0).toUpperCase() || 'U'}
+                                </div>
+                                {/* User Info */}
+                                <div className="text-left">
+                                    <p className="text-sm font-medium text-gray-800">{auth?.user?.name || 'User'}</p>
+                                    <p className="text-xs text-gray-500">Guru</p>
+                                </div>
+                                {/* Dropdown Arrow */}
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180' : ''}`}
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+
+                            {/* Dropdown Menu */}
+                            {isProfileDropdownOpen && (
+                                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                                    <div className="px-4 py-3 border-b border-gray-100">
+                                        <p className="text-sm font-medium text-gray-800">{auth?.user?.name || 'User'}</p>
+                                        <p className="text-xs text-gray-500 truncate">{auth?.user?.email || ''}</p>
+                                    </div>
+                                    <Link
+                                        href="/logout"
+                                        method="get"
+                                        as="a"
+                                        className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition duration-150 ease-in-out"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1"
+                                            />
+                                        </svg>
+                                        Logout
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="p-6">
                     {/* Content */}
                     <div className="rounded-lg bg-white p-6 shadow-md">{children}</div>
                 </div>
@@ -133,3 +196,4 @@ export default function Layout({ children, title }) {
         </div>
     );
 }
+

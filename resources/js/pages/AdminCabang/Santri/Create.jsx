@@ -4,13 +4,7 @@ import Layout from '../components/Layout';
 
 const SantriCreate = () => {
     const { data, setData, post, errors } = useForm({
-        // User
-        username: '',
-        email: '',
-        password: '',
-
         // Santri
-        user_id: '',
         kelas_id: null,
         nama: '',
         panggilan: '',
@@ -117,6 +111,27 @@ const SantriCreate = () => {
         { value: 'O', label: 'O' },
     ];
 
+    const statusAnakOptions = [
+        { value: 'Kandung', label: 'Kandung' },
+        { value: 'Yatim', label: 'Yatim' },
+        { value: 'Piatu', label: 'Piatu' },
+        { value: 'Yatim Piatu', label: 'Yatim Piatu' },
+        { value: 'Angkat', label: 'Angkat' },
+    ];
+
+    const pendidikanOptions = [
+        { value: 'Tidak Sekolah', label: 'Tidak Sekolah' },
+        { value: 'SD/Sederajat', label: 'SD/Sederajat' },
+        { value: 'SMP/Sederajat', label: 'SMP/Sederajat' },
+        { value: 'SMA/Sederajat', label: 'SMA/Sederajat' },
+        { value: 'D1', label: 'D1' },
+        { value: 'D2', label: 'D2' },
+        { value: 'D3', label: 'D3' },
+        { value: 'D4/S1', label: 'D4/S1' },
+        { value: 'S2', label: 'S2' },
+        { value: 'S3', label: 'S3' },
+    ];
+
     return (
         <Layout title="Tambah Santri">
             <div className="space-y-4">
@@ -137,12 +152,6 @@ const SantriCreate = () => {
 
                 <div className="rounded-lg bg-white p-6 shadow-md">
                     <form onSubmit={onSubmit} encType="multipart/form-data">
-                        {/* User Info */}
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 mb-6">
-                            <FormInput label="Username" name="username" value={data.username} onChange={onChange} required />
-                            <FormInput label="Email" name="email" type="email" value={data.email} onChange={onChange} />
-                            <FormInput label="Password" name="password" type="password" value={data.password} onChange={onChange} required />
-                        </div>
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <FormInput label="Nama Lengkap" name="nama" value={data.nama} onChange={onChange} required />
                             <FormInput label="Nama Panggilan" name="panggilan" value={data.panggilan} onChange={onChange} />
@@ -188,9 +197,10 @@ const SantriCreate = () => {
                             <FormInput
                                 label="Status Anak"
                                 name="status_anak"
+                                type="select"
                                 value={data.status_anak}
                                 onChange={onChange}
-                                placeholder="Kandung / Yatim / Piatu / dll"
+                                options={statusAnakOptions}
                                 required
                             />
                             <FormInput
@@ -230,7 +240,7 @@ const SantriCreate = () => {
                                     <FormInput label="Status Hubungan" name="ayah_status_hubungan" type="select" value={data.ayah_status_hubungan} onChange={onChange} options={statusHubungan} required />
                                     <FormInput label="Tempat Lahir" name="ayah_tempat_lahir" value={data.ayah_tempat_lahir} onChange={onChange} />
                                     <FormInput label="Tanggal Lahir" name="ayah_tanggal_lahir" type="date" value={data.ayah_tanggal_lahir} onChange={onChange} />
-                                    <FormInput label="Pendidikan" name="ayah_pendidikan" value={data.ayah_pendidikan} onChange={onChange} />
+                                    <FormInput label="Pendidikan" name="ayah_pendidikan" type="select" value={data.ayah_pendidikan} onChange={onChange} options={pendidikanOptions} />
                                     <FormInput label="Pekerjaan" name="ayah_pekerjaan" value={data.ayah_pekerjaan} onChange={onChange} />
                                     <FormInput label="Penghasilan" name="ayah_penghasilan" value={data.ayah_penghasilan} onChange={onChange} />
                                     <FormInput label="Email" name="ayah_email" type="email" value={data.ayah_email} onChange={onChange} />
@@ -245,7 +255,7 @@ const SantriCreate = () => {
                                     <FormInput label="Status Hubungan" name="ibu_status_hubungan" type="select" value={data.ibu_status_hubungan} onChange={onChange} options={statusHubungan} required />
                                     <FormInput label="Tempat Lahir" name="ibu_tempat_lahir" value={data.ibu_tempat_lahir} onChange={onChange} />
                                     <FormInput label="Tanggal Lahir" name="ibu_tanggal_lahir" type="date" value={data.ibu_tanggal_lahir} onChange={onChange} />
-                                    <FormInput label="Pendidikan" name="ibu_pendidikan" value={data.ibu_pendidikan} onChange={onChange} />
+                                    <FormInput label="Pendidikan" name="ibu_pendidikan" type="select" value={data.ibu_pendidikan} onChange={onChange} options={pendidikanOptions} />
                                     <FormInput label="Pekerjaan" name="ibu_pekerjaan" value={data.ibu_pekerjaan} onChange={onChange} />
                                     <FormInput label="Penghasilan" name="ibu_penghasilan" value={data.ibu_penghasilan} onChange={onChange} />
                                     <FormInput label="Email" name="ibu_email" type="email" value={data.ibu_email} onChange={onChange} />
@@ -260,7 +270,7 @@ const SantriCreate = () => {
                                     <FormInput label="Status Hubungan" name="wali_status_hubungan" type="select" value={data.wali_status_hubungan} onChange={onChange} options={statusHubungan}/>
                                     <FormInput label="Tempat Lahir" name="wali_tempat_lahir" value={data.wali_tempat_lahir} onChange={onChange}/>
                                     <FormInput label="Tanggal Lahir" name="wali_tanggal_lahir" type="date" value={data.wali_tanggal_lahir} onChange={onChange} />
-                                    <FormInput label="Pendidikan" name="wali_pendidikan" value={data.wali_pendidikan} onChange={onChange} />
+                                    <FormInput label="Pendidikan" name="wali_pendidikan" type="select" value={data.wali_pendidikan} onChange={onChange} options={pendidikanOptions} />
                                     <FormInput label="Pekerjaan" name="wali_pekerjaan" value={data.wali_pekerjaan} onChange={onChange} />
                                     <FormInput label="Penghasilan" name="wali_penghasilan" value={data.wali_penghasilan} onChange={onChange} />
                                     <FormInput label="Email" name="wali_email" type="email" value={data.wali_email} onChange={onChange} />

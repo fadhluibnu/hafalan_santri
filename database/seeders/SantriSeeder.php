@@ -3,10 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\Santri;
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 use Faker\Factory as Faker;
 
 class SantriSeeder extends Seeder
@@ -28,16 +26,11 @@ class SantriSeeder extends Seeder
         $faker = Faker::create();
 
         for ($i = 1; $i <= 10; $i++) {
-            $user = User::create([
-                "username" => "santri{$i}",
-                "email" => "santri{$i}@example.com",
-                "password" => Hash::make("password123"),
-                "role" => "santri",
-                "status" => 1,
-            ]);
-
+            // Generate NIS menggunakan method di model
+            $nis = Santri::generateNis($pondok->id);
+            
             Santri::create([
-                "user_id" => $user->id,
+                "nis" => $nis,
                 "pondok_id" => $pondok->id,
                 "kelas_id" => null,
                 "nama" => "Santri {$i}",
@@ -65,3 +58,4 @@ class SantriSeeder extends Seeder
         }
     }
 }
+

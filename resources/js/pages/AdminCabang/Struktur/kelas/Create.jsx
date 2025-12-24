@@ -3,7 +3,7 @@ import { Link, useForm } from '@inertiajs/react';
 import FormInput from '../../../SuperAdmin/components/FormInput';
 import Layout from '../../components/Layout';
 
-const KelasCreate = ({ gurus = [] }) => {
+const KelasCreate = ({ ustadzs = [] }) => {
     const { data, setData, post, processing, errors } = useForm({
         nama: '',
         tingkat: 'Juz 30',
@@ -21,7 +21,7 @@ const KelasCreate = ({ gurus = [] }) => {
         { value: 'Juz 21-30', label: 'Juz 21-30' },
     ];
 
-    const guruOptions = [{ value: '', label: '— Pilih Wali Kelas —' }, ...gurus.map(g => ({ value: g.id, label: g.nama }))];
+    const ustadzOptions = [{ value: '', label: '— Pilih Wali Kelas —' }, ...ustadzs.map(u => ({ value: u.id, label: u.nama }))];
 
     const onChange = (e) => {
         const { name, value, type } = e.target;
@@ -69,7 +69,7 @@ const KelasCreate = ({ gurus = [] }) => {
                             type="select"
                             value={data.wali_kelas_id}
                             onChange={onChange}
-                            options={guruOptions}
+                            options={ustadzOptions}
                             placeholder="Pilih wali kelas"
                             error={errors.wali_kelas_id}
                         />

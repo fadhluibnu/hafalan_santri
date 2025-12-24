@@ -4,14 +4,9 @@ import Layout from '../components/Layout';
 
 const SantriEdit = ({ santri }) => {
     const { data, setData, post, errors } = useForm({
-        // User
-        username: santri.username || '',
-        user_email: santri.user_email || '',
-        password: '',
-
         // Santri
         id: santri.id,
-        user_id: santri.user_id,
+        nis: santri.nis || '',
         pondok_id: santri.pondok_id,
         kelas_id: santri.kelas_id,
         nama: santri.nama || '',
@@ -119,6 +114,27 @@ const SantriEdit = ({ santri }) => {
         { value: 'O', label: 'O' },
     ];
 
+    const statusAnakOptions = [
+        { value: 'Kandung', label: 'Kandung' },
+        { value: 'Yatim', label: 'Yatim' },
+        { value: 'Piatu', label: 'Piatu' },
+        { value: 'Yatim Piatu', label: 'Yatim Piatu' },
+        { value: 'Angkat', label: 'Angkat' },
+    ];
+
+    const pendidikanOptions = [
+        { value: 'Tidak Sekolah', label: 'Tidak Sekolah' },
+        { value: 'SD/Sederajat', label: 'SD/Sederajat' },
+        { value: 'SMP/Sederajat', label: 'SMP/Sederajat' },
+        { value: 'SMA/Sederajat', label: 'SMA/Sederajat' },
+        { value: 'D1', label: 'D1' },
+        { value: 'D2', label: 'D2' },
+        { value: 'D3', label: 'D3' },
+        { value: 'D4/S1', label: 'D4/S1' },
+        { value: 'S2', label: 'S2' },
+        { value: 'S3', label: 'S3' },
+    ];
+
     return (
         <Layout title={`Edit Santri - ${data.nama}`}>
             <div className="space-y-4">
@@ -130,7 +146,7 @@ const SantriEdit = ({ santri }) => {
                 <div className="flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-gray-700">Form Edit Santri</h2>
                     <Link
-                        href={route('admin-cabang.santri.show', data.id)}
+                        href={route('admin-cabang.santri.index')}
                         className="rounded-md border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
                     >
                         Kembali
@@ -139,11 +155,12 @@ const SantriEdit = ({ santri }) => {
 
                 <div className="rounded-lg bg-white p-6 shadow-md">
                     <form onSubmit={onSubmit} encType="multipart/form-data">
-                        {/* User Info */}
+                        {/* NIS (read-only) */}
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 mb-6">
-                            <FormInput label="Username" name="username" value={data.username} onChange={onChange} required />
-                            <FormInput label="Email" name="user_email" type="email" value={data.user_email} onChange={onChange} />
-                            <FormInput label="Password (Isi jika ingin ganti)" name="password" type="password" value={data.password} onChange={onChange} />
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">NIS</label>
+                                <div className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-gray-600">{data.nis || '-'}</div>
+                            </div>
                         </div>
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <FormInput label="Nama Lengkap" name="nama" value={data.nama} onChange={onChange} required />
@@ -190,9 +207,10 @@ const SantriEdit = ({ santri }) => {
                             <FormInput
                                 label="Status Anak"
                                 name="status_anak"
+                                type="select"
                                 value={data.status_anak}
                                 onChange={onChange}
-                                placeholder="Kandung / Yatim / Piatu / dll"
+                                options={statusAnakOptions}
                                 required
                             />
                             <FormInput
@@ -230,7 +248,7 @@ const SantriEdit = ({ santri }) => {
                                     <FormInput label="Status Hubungan" name="ayah_status_hubungan" type="select" value={data.ayah_status_hubungan} onChange={onChange} options={statusHubungan} required />
                                     <FormInput label="Tempat Lahir" name="ayah_tempat_lahir" value={data.ayah_tempat_lahir} onChange={onChange} />
                                     <FormInput label="Tanggal Lahir" name="ayah_tanggal_lahir" type="date" value={data.ayah_tanggal_lahir} onChange={onChange} />
-                                    <FormInput label="Pendidikan" name="ayah_pendidikan" value={data.ayah_pendidikan} onChange={onChange} />
+                                    <FormInput label="Pendidikan" name="ayah_pendidikan" type="select" value={data.ayah_pendidikan} onChange={onChange} options={pendidikanOptions} />
                                     <FormInput label="Pekerjaan" name="ayah_pekerjaan" value={data.ayah_pekerjaan} onChange={onChange} />
                                     <FormInput label="Penghasilan" name="ayah_penghasilan" value={data.ayah_penghasilan} onChange={onChange} />
                                     <FormInput label="Email" name="ayah_email" type="email" value={data.ayah_email} onChange={onChange} />
@@ -245,7 +263,7 @@ const SantriEdit = ({ santri }) => {
                                     <FormInput label="Status Hubungan" name="ibu_status_hubungan" type="select" value={data.ibu_status_hubungan} onChange={onChange} options={statusHubungan} required />
                                     <FormInput label="Tempat Lahir" name="ibu_tempat_lahir" value={data.ibu_tempat_lahir} onChange={onChange} />
                                     <FormInput label="Tanggal Lahir" name="ibu_tanggal_lahir" type="date" value={data.ibu_tanggal_lahir} onChange={onChange} />
-                                    <FormInput label="Pendidikan" name="ibu_pendidikan" value={data.ibu_pendidikan} onChange={onChange} />
+                                    <FormInput label="Pendidikan" name="ibu_pendidikan" type="select" value={data.ibu_pendidikan} onChange={onChange} options={pendidikanOptions} />
                                     <FormInput label="Pekerjaan" name="ibu_pekerjaan" value={data.ibu_pekerjaan} onChange={onChange} />
                                     <FormInput label="Penghasilan" name="ibu_penghasilan" value={data.ibu_penghasilan} onChange={onChange} />
                                     <FormInput label="Email" name="ibu_email" type="email" value={data.ibu_email} onChange={onChange} />
@@ -260,7 +278,7 @@ const SantriEdit = ({ santri }) => {
                                     <FormInput label="Status Hubungan" name="wali_status_hubungan" type="select" value={data.wali_status_hubungan} onChange={onChange} options={statusHubungan}/>
                                     <FormInput label="Tempat Lahir" name="wali_tempat_lahir" value={data.wali_tempat_lahir} onChange={onChange}/>
                                     <FormInput label="Tanggal Lahir" name="wali_tanggal_lahir" type="date" value={data.wali_tanggal_lahir} onChange={onChange} />
-                                    <FormInput label="Pendidikan" name="wali_pendidikan" value={data.wali_pendidikan} onChange={onChange} />
+                                    <FormInput label="Pendidikan" name="wali_pendidikan" type="select" value={data.wali_pendidikan} onChange={onChange} options={pendidikanOptions} />
                                     <FormInput label="Pekerjaan" name="wali_pekerjaan" value={data.wali_pekerjaan} onChange={onChange} />
                                     <FormInput label="Penghasilan" name="wali_penghasilan" value={data.wali_penghasilan} onChange={onChange} />
                                     <FormInput label="Email" name="wali_email" type="email" value={data.wali_email} onChange={onChange} />

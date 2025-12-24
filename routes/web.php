@@ -40,11 +40,23 @@ Route::prefix('admin-cabang')
         // Gunakan controller agar data dinamis dari DashboardController@index tersedia di view
         Route::get('/', [\App\Http\Controllers\AdminCabang\DashboardController::class, 'index'])->name('dashboard');
 
+        // Santri Excel export/import routes (harus sebelum resource route)
+        Route::get('santri/export', [SantriController::class, 'export'])->name('santri.export');
+        Route::get('santri/template', [SantriController::class, 'downloadTemplate'])->name('santri.template');
+        Route::post('santri/import', [SantriController::class, 'import'])->name('santri.import');
+        
+        // Santri PDF export route
+        Route::get('santri/{nis}/pdf', [\App\Http\Controllers\AdminCabang\SantriPdfController::class, 'generatePdf'])->name('santri.pdf');
+        
+        // Santri Hafalan Progress routes
+        Route::get('santri/{nis}/hafalan', [\App\Http\Controllers\AdminCabang\SantriHafalanController::class, 'index'])->name('santri.hafalan');
+        Route::get('santri/{nis}/hafalan/pdf', [\App\Http\Controllers\AdminCabang\SantriHafalanController::class, 'exportPdf'])->name('santri.hafalan.pdf');
+
         // Santri Resource Route
         Route::resource('santri', SantriController::class);
 
-        // Guru Routes
-        Route::resource('guru', \App\Http\Controllers\AdminCabang\GuruController::class);
+        // Ustadz Routes (menggantikan Guru)
+        Route::resource('ustadz', \App\Http\Controllers\AdminCabang\UstadzController::class);
 
         // Ganti blok closure sebelumnya dengan resource controller untuk struktur/kelas
         Route::resource('struktur/kelas', KelasController::class)
@@ -64,45 +76,24 @@ Route::prefix('admin-cabang')
         Route::post('struktur/kelas/{id}/santri', [KelasController::class, 'storeSanTri'])
             ->name('struktur.kelas.manage_santri.store');
     });
-    //         })->name('show');
 
-    //         Route::get('/{id}/edit', function ($id) {
-    //             return Inertia::render('AdminCabang/Struktur/kelas/Edit', [
-    //                 // 'kelas' => ['id' => (int)$id, 'nama' => 'Kelas Tahfidz A', 'tingkat' => 'Juz 30', 'waliKelas' => 'Ustadz Rahman', 'kapasitas' => 25, 'keterangan' => '...']
-    //             ]);
-    //         })->name('edit');
-    //         Route::get('/{id}/santri', function ($id) {
-    //             return Inertia::render('AdminCabang/Struktur/kelas/ManageSantri', [
-    //                 // 'kelas' => ['id' => (int)$id, 'nama' => 'Kelas Tahfidz A', 'tingkat' => 'Juz 30', 'waliKelas' => 'Ustadz Rahman', 'kapasitas' => 25, 'keterangan' => '...']
-    //             ]);
-    //         })->name('manage_santri');
-    //         Route::post('/{id}/santri', function ($id) {
-    //             // Expect payload: santri_ids: array
-    //             // For now, just bounce back with a success message
-    //             return back()->with('success', 'Penempatan santri disimpan (dummy)');
-    //         })->name('manage_santri.store');
-
-    //         Route::delete('/{id}', function ($id) {
-    //             // Dummy destroy kelas
-    //             return back()->with('success', 'Kelas dihapus (dummy)');
-    //         })->name('destroy');
-    //     });
-    // });
-    // });
-// Guru Routes (UI only, using Inertia pages)
-Route::prefix('guru')
-    ->name('guru.')
-    ->middleware(['auth', 'guru'])
+// Ustadz Routes (menggantikan Guru Routes)
+Route::prefix('ustadz')
+    ->name('ustadz.')
+    ->middleware(['auth', 'ustadz'])
     ->group(function () {
-        Route::get('/', function () {
-            return Inertia::render('Guru/Dashboard');
-        })->name('dashboard');
+        Route::get('/', [\App\Http\Controllers\Ustadz\DashboardController::class, 'index'])->name('dashboard');
 
         // gunakan resource controller agar route names standard tersedia (index, create, store, show, edit, update, destroy)
-        Route::resource('hafalan', \App\Http\Controllers\Guru\HafalanController::class);
+        Route::resource('/hafalan', \App\Http\Controllers\Ustadz\HafalanController::class);
+
+        // Santri routes (read-only untuk ustadz)
+        Route::get('/santri', [\App\Http\Controllers\Ustadz\SantriController::class, 'index'])->name('santri.index');
+        Route::get('/santri/{nis}', [\App\Http\Controllers\Ustadz\SantriController::class, 'show'])->name('santri.show');
+        Route::get('/santri/{nis}/hafalan', [\App\Http\Controllers\Ustadz\SantriController::class, 'hafalan'])->name('santri.hafalan');
+        Route::get('/santri/{nis}/hafalan/pdf', [\App\Http\Controllers\Ustadz\SantriController::class, 'exportPdf'])->name('santri.hafalan.pdf');
 
         // Laporan - gunakan controller agar dinamis
-        Route::get('/laporan', [\App\Http\Controllers\Guru\LaporanController::class, 'index'])->name('laporan');
+        Route::get('/laporan', [\App\Http\Controllers\Ustadz\LaporanController::class, 'index'])->name('laporan');
+    });
 
-        });
-    // });

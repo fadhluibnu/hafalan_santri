@@ -12,7 +12,7 @@ class Hafalan extends Model
     
     protected $fillable = [
         'santri_id',
-        'guru_id',
+        'ustadz_id',
         'kelas_id',
         'tanggal_setor',
         'juz',
@@ -30,9 +30,9 @@ class Hafalan extends Model
         return $this->belongsTo(Santri::class, 'santri_id');
     }
 
-    public function guru()
+    public function ustadz()
     {
-        return $this->belongsTo(Guru::class, 'guru_id');
+        return $this->belongsTo(Ustadz::class, 'ustadz_id');
     }
 
     public function kelas()
@@ -51,3 +51,4 @@ class Hafalan extends Model
     }
 
 }
+

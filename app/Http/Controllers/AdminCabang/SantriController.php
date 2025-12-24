@@ -7,12 +7,14 @@ use Illuminate\Http\Request;
 use App\Models\Santri;
 use App\Models\OrangTua;
 use App\Models\KesehatanSantri;
-use App\Models\User;
 use App\Models\AdminCabang;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
+use App\Exports\SantriExport;
+use App\Exports\SantriTemplateExport;
+use App\Imports\SantriImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SantriController extends Controller
 {
@@ -21,11 +23,13 @@ class SantriController extends Controller
      */
     public function index()
     {
+        $pondok_id = AdminCabang::where('user_id', Auth::id())->with('pondok')->first();
+        $pondok_id = $pondok_id->pondok->id;
         // Ambil data penting saja, termasuk total juz sah dan foto, dengan pagination
-        $santris = Santri::with(['kelas:id,nama', 'jus' => function($q) {
+        $santris = Santri::where('pondok_id', $pondok_id)->with(['kelas:id,nama', 'jus' => function($q) {
             $q->where('status', 'sah');
         }])
-            ->select('id', 'nama', 'kelas_id', 'foto')
+            ->select('id', 'nis', 'nama', 'kelas_id', 'foto')
             ->orderBy('nama')
             ->paginate(10);
 
@@ -52,11 +56,6 @@ class SantriController extends Controller
         try {
             // Validasi request
             $validated = $request->validate([
-                // User
-                'username' => 'required|string|max:50|unique:users,username',
-                'email' => 'nullable|email|max:100|unique:users,email',
-                'password' => 'required|string|min:8',
-
                 // Santri
                 'nama' => 'required|string|max:255',
                 'panggilan' => 'nullable|string|max:255',
@@ -132,27 +131,18 @@ class SantriController extends Controller
                 throw new \Exception('Data admin cabang tidak ditemukan.');
             }
 
-            // Buat user baru untuk santri
-            $user = User::create([
-                'username' => $request->username,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'role' => 'santri',
-                'status' => true,
-            ]);
-            if (!$user) {
-                throw new \Exception('Gagal membuat user santri.');
-            }
-
             // Upload foto jika ada
             $fotoPath = null;
             if ($request->hasFile('foto')) {
                 $fotoPath = $request->file('foto')->store('santri_foto', 'public');
             }
 
+            // Generate NIS menggunakan method di model
+            $nis = Santri::generateNis($adminCabang->pondok_id);
+
             // Buat data santri
             $santri = Santri::create([
-                'user_id' => $user->id,
+                'nis' => $nis,
                 'pondok_id' => $adminCabang->pondok_id,
                 'kelas_id' => $request->kelas_id,
                 'nama' => $request->nama,
@@ -252,16 +242,17 @@ class SantriController extends Controller
 
     /**
      * Display the specified resource.
+     * @param string $nis NIS Santri
      */
-    public function show(string $id)
+    public function show(string $nis)
     {
-        // Ambil data santri beserta relasi orang tua dan kesehatan
+        // Ambil data santri berdasarkan NIS beserta relasi orang tua dan kesehatan
         $santri = Santri::with([
             'orangTuas',
             'kesehatanSantri',
             'kelas:id,nama',
             'pondok:id,nama'
-        ])->findOrFail($id);
+        ])->where('nis', $nis)->firstOrFail();
 
         // Format data orang tua agar mudah diakses di frontend
         $ayah = $santri->orangTuas->where('tipe', 'Ayah')->first();
@@ -271,6 +262,7 @@ class SantriController extends Controller
         return Inertia::render('AdminCabang/Santri/Show', [
             'santri' => [
                 'id' => $santri->id,
+                'nis' => $santri->nis,
                 'nama' => $santri->nama,
                 'panggilan' => $santri->panggilan,
                 'jenis_kelamin' => $santri->jenis_kelamin,
@@ -308,17 +300,17 @@ class SantriController extends Controller
 
     /**
      * Show the form for editing the specified resource.
+     * @param string $nis NIS Santri
      */
-    public function edit(string $id)
+    public function edit(string $nis)
     {
-        // Ambil data santri beserta relasi orang tua dan kesehatan
+        // Ambil data santri berdasarkan NIS beserta relasi orang tua dan kesehatan
         $santri = Santri::with([
             'orangTuas',
             'kesehatanSantri',
             'kelas:id,nama',
-            'pondok:id,nama',
-            'user:id,username,email'
-        ])->findOrFail($id);
+            'pondok:id,nama'
+        ])->where('nis', $nis)->firstOrFail();
 
         // Format data orang tua agar mudah diakses di frontend
         $ayah = $santri->orangTuas->where('tipe', 'Ayah')->first();
@@ -328,7 +320,7 @@ class SantriController extends Controller
         return Inertia::render('AdminCabang/Santri/Edit', [
             'santri' => [
                 'id' => $santri->id,
-                'user_id' => $santri->user_id,
+                'nis' => $santri->nis,
                 'pondok_id' => $santri->pondok_id,
                 'kelas_id' => $santri->kelas_id,
                 'nama' => $santri->nama,
@@ -352,9 +344,6 @@ class SantriController extends Controller
                 'email' => $santri->email,
                 'hobi' => $santri->hobi,
                 'foto' => $santri->foto,
-                // User
-                'username' => $santri->user ? $santri->user->username : '',
-                'user_email' => $santri->user ? $santri->user->email : '',
                 // Orang tua Ayah
                 'ayah_nama' => $ayah?->nama,
                 'ayah_status' => $ayah?->status,
@@ -408,15 +397,10 @@ class SantriController extends Controller
         DB::beginTransaction();
         try {
             // Ambil data santri
-            $santri = Santri::with(['orangTuas', 'kesehatanSantri', 'user'])->findOrFail($id);
+            $santri = Santri::with(['orangTuas', 'kesehatanSantri'])->findOrFail($id);
 
             // Validasi request
             $validated = $request->validate([
-                // User
-                'username' => 'required|string|max:50|unique:users,username,' . $santri->user_id,
-                'user_email' => 'nullable|email|max:100|unique:users,email,' . $santri->user_id,
-                'password' => 'nullable|string|min:8',
-
                 // Santri
                 'nama' => 'required|string|max:255',
                 'panggilan' => 'nullable|string|max:255',
@@ -485,16 +469,6 @@ class SantriController extends Controller
                 'tinggi_badan' => 'nullable|numeric',
                 'riwayat_penyakit' => 'nullable|string',
             ]);
-
-            // Update user
-            if ($santri->user) {
-                $santri->user->username = $request->username;
-                $santri->user->email = $request->user_email;
-                if ($request->filled('password')) {
-                    $santri->user->password = Hash::make($request->password);
-                }
-                $santri->user->save();
-            }
 
             // Upload foto jika ada
             $fotoPath = $santri->foto;
@@ -667,6 +641,60 @@ class SantriController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        DB::beginTransaction();
+        try {
+            $santri = Santri::findOrFail($id);
+
+            // Hapus data relasi terlebih dahulu
+            $santri->orangTuas()->delete();
+            $santri->kesehatanSantri()->delete();
+            
+            // Hapus santri
+            $santri->delete();
+
+            DB::commit();
+
+            return redirect()->route('admin-cabang.santri.index')
+                ->with('success', 'Data santri berhasil dihapus.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->withErrors(['error' => 'Gagal menghapus santri: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Export santri to Excel.
+     */
+    public function export()
+    {
+        return Excel::download(new SantriExport, 'data_santri_' . date('Y-m-d') . '.xlsx');
+    }
+
+    /**
+     * Download Excel template for import.
+     */
+    public function downloadTemplate()
+    {
+        return Excel::download(new SantriTemplateExport, 'template_import_santri.xlsx');
+    }
+
+    /**
+     * Import santri from Excel.
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls|max:10240',
+        ]);
+
+        try {
+            Excel::import(new SantriImport, $request->file('file'));
+            return redirect()->route('admin-cabang.santri.index')
+                ->with('success', 'Data santri berhasil diimport.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'Gagal import: ' . $e->getMessage()]);
+        }
     }
 }

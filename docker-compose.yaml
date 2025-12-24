@@ -1,0 +1,37 @@
+services:
+    mysql:
+        image: mysql
+        container_name: mysql_hafalan_santri
+        restart: always
+        command: --port=3311
+        environment:
+            MYSQL_USER: 'hafalan_santri'
+            MYSQL_PASSWORD: 'hafalan_santri'
+            MYSQL_ROOT_PASSWORD: 'password'
+            MYSQL_DATABASE: 'hafalan_santri'
+            MYSQL_ROOT_HOST: '%'
+            TZ: Asia/Jakarta
+        ports:
+            - '3311:3311'
+        volumes:
+            - ./.docker_volumes/mysql:/var/lib/mysql
+        healthcheck:
+            test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'root', '-ppassword', '--port=3311']
+            interval: 10s
+            timeout: 5s
+            retries: 3
+
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        container_name: phpmyadmin_hafalan_santri
+        restart: always
+        depends_on:
+            - mysql
+        ports:
+            - '5748:80'
+        environment:
+            PMA_HOST: mysql
+            PMA_PORT: 3311
+            PMA_USER: root
+            PMA_PASSWORD: password
+        mem_limit: 512m

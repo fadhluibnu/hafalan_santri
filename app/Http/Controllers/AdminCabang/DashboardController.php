@@ -8,7 +8,7 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use App\Models\AdminCabang;
 use App\Models\Santri;
-use App\Models\Guru;
+use App\Models\Ustadz;
 use App\Models\JuzSantri; // pastikan nama model juz sesuai (sesuaikan jika berbeda)
 
 class DashboardController extends Controller
@@ -22,9 +22,9 @@ class DashboardController extends Controller
         $adminCabang = AdminCabang::where('user_id', Auth::id())->first();
         $pondokId = $adminCabang->pondok_id ?? null;
 
-        // Hitung jumlah santri / guru untuk pondok tersebut
+        // Hitung jumlah santri / ustadz untuk pondok tersebut
         $jumlahSantri = $pondokId ? Santri::where('pondok_id', $pondokId)->count() : Santri::count();
-        $jumlahGuru = $pondokId ? Guru::where('pondok_id', $pondokId)->count() : Guru::count();
+        $jumlahUstadz = $pondokId ? Ustadz::where('pondok_id', $pondokId)->count() : Ustadz::count();
 
         // Hitung total juz sah (gabungkan ke santri pondok jika diperlukan)
         $totalJuzSah = 0;
@@ -64,7 +64,7 @@ class DashboardController extends Controller
 
         return Inertia::render('AdminCabang/Dashboard', [
             'jumlahSantri' => $jumlahSantri,
-            'jumlahGuru' => $jumlahGuru,
+            'jumlahUstadz' => $jumlahUstadz,
             'totalJuzSah' => $totalJuzSah,
             'rekapData' => $rekap,
         ]);

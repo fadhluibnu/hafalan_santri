@@ -20,7 +20,7 @@ class GuruSeeder extends Seeder
         // Guru 1
         $user1 = User::create([
             "username"=> "guru1",
-            "email"=> "guru1@example.com",
+            "email"=> "guru1@gmail.com",
             "password"=> Hash::make("password123"),
             "role"=> "guru",
             "status"=> 1,
@@ -50,7 +50,7 @@ class GuruSeeder extends Seeder
         // Guru 2
         $user2 = User::create([
             "username"=> "guru2",
-            "email"=> "guru2@example.com",
+            "email"=> "guru2@gmail.com",
             "password"=> Hash::make("password123"),
             "role"=> "guru",
             "status"=> 1,

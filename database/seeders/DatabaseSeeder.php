@@ -44,7 +44,7 @@ class DatabaseSeeder extends Seeder
             SuperAdminSeeder::class,
             PondokSeeder::class,
             AdminCabangSeeder::class,
-            GuruSeeder::class,
+            UstadzSeeder::class,
             SantriSeeder::class,
             OrangTuaSeeder::class,
             KesehatanSantriSeeder::class

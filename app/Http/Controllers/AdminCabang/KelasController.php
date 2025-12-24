@@ -9,7 +9,7 @@ use App\Models\Kelas;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\AdminCabang;
-use App\Models\Guru;
+use App\Models\Ustadz;
 use App\Models\Santri;
 
 class KelasController extends Controller
@@ -72,11 +72,11 @@ class KelasController extends Controller
         $adminCabang = AdminCabang::where('user_id', Auth::id())->first();
         $pondokId = $adminCabang->pondok_id ?? null;
 
-        // Ambil daftar guru untuk pondok tersebut (id + nama)
-        $gurus = $pondokId ? Guru::where('pondok_id', $pondokId)->select('id', 'nama')->orderBy('nama')->get() : collect();
+        // Ambil daftar ustadz untuk pondok tersebut (id + nama)
+        $ustadzs = $pondokId ? Ustadz::where('pondok_id', $pondokId)->select('id', 'nama')->orderBy('nama')->get() : collect();
 
         return Inertia::render('AdminCabang/Struktur/kelas/Create', [
-            'gurus' => $gurus,
+            'ustadzs' => $ustadzs,
         ]);
     }
 
@@ -88,7 +88,7 @@ class KelasController extends Controller
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
             'tingkat' => 'nullable|string|max:50',
-            'wali_kelas_id' => 'nullable|exists:gurus,id',
+            'wali_kelas_id' => 'nullable|exists:ustadzs,id',
             'kapasitas' => 'nullable|integer|min:1',
             'keterangan' => 'nullable|string',
         ]);
@@ -182,8 +182,8 @@ class KelasController extends Controller
             abort(403, 'Anda tidak berwenang mengakses kelas ini.');
         }
 
-        // Ambil daftar guru untuk pondok tersebut (id + nama)
-        $gurus = $pondokId ? Guru::where('pondok_id', $pondokId)->select('id', 'nama')->orderBy('nama')->get() : collect();
+        // Ambil daftar ustadz untuk pondok tersebut (id + nama)
+        $ustadzs = $pondokId ? Ustadz::where('pondok_id', $pondokId)->select('id', 'nama')->orderBy('nama')->get() : collect();
 
         // Kirim ke Inertia
         return Inertia::render('AdminCabang/Struktur/kelas/Edit', [
@@ -195,7 +195,7 @@ class KelasController extends Controller
                 'kapasitas' => $kelas->kapasitas,
                 'keterangan' => $kelas->keterangan,
             ],
-            'gurus' => $gurus,
+            'ustadzs' => $ustadzs,
         ]);
     }
 
@@ -207,7 +207,7 @@ class KelasController extends Controller
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
             'tingkat' => 'nullable|string|max:50',
-            'wali_kelas_id' => 'nullable|exists:gurus,id',
+            'wali_kelas_id' => 'nullable|exists:ustadzs,id',
             'kapasitas' => 'nullable|integer|min:1',
             'keterangan' => 'nullable|string',
         ]);

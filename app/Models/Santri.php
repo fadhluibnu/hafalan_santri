@@ -11,7 +11,7 @@ class Santri extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
+        'nis',
         'pondok_id',
         'kelas_id',
         'nama',
@@ -38,11 +38,33 @@ class Santri extends Model
     ];
 
     /**
-     * Relasi ke User.
+     * Generate NIS (Nomor Induk Santri) otomatis.
+     * Format: YYYYPPPSSSS
+     * - YYYY: Tahun (4 digit)
+     * - PPP: Kode Pondok (3 digit)
+     * - SSSS: Urutan (4 digit)
+     * Contoh: 20240010001
      */
-    public function user()
+    public static function generateNis($pondokId)
     {
-        return $this->belongsTo(User::class);
+        $year = date('Y');
+        $pondokCode = str_pad($pondokId, 3, '0', STR_PAD_LEFT);
+        $prefix = $year . $pondokCode;
+
+        // Cari urutan terakhir untuk pondok ini di tahun ini
+        $lastNis = self::where('pondok_id', $pondokId)
+            ->where('nis', 'like', "{$prefix}%")
+            ->orderBy('nis', 'desc')
+            ->value('nis');
+
+        if ($lastNis) {
+            $lastNumber = (int) substr($lastNis, -4);
+            $nextNumber = $lastNumber + 1;
+        } else {
+            $nextNumber = 1;
+        }
+
+        return $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
     }
 
     /**
