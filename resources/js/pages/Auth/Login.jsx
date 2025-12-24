@@ -16,12 +16,13 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen flex items-center justify-center bg-gray-200 py-12 px-4 sm:px-6 lg:px-8">
             <Head title="Login" />
-            <div className="max-w-md w-full space-y-8">
+            <div className="max-w-lg w-full space-y-8 bg-gray-100 p-8 rounded-lg shadow-lg">
                 <div>
+                    <img src="img/logo-pppa.png" alt="Logo" className="mx-auto h-16 w-auto" />
                     <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                        Hafalan Santri
+                        PPPA DAARUL QUR'AN
                     </h2>
                     <p className="mt-2 text-center text-sm text-gray-600">
                         Masuk ke akun Anda
@@ -33,16 +34,16 @@ export default function Login() {
                     </div>
                 )}
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                    <div className="rounded-md shadow-sm -space-y-px">
+                    <div className="">
                         <div>
-                            <label htmlFor="email" className="sr-only">Email</label>
+                            <label htmlFor="email" className="mx-2 text-md font-semibold">Email</label>
                             <input
                                 id="email"
                                 name="email"
                                 type="text"
                                 required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                                placeholder="email"
+                                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm my-2"
+                                placeholder="Email"
                                 value={data.email}
                                 onChange={e => setData('email', e.target.value)}
                             />
@@ -51,20 +52,20 @@ export default function Login() {
                             )}
                         </div>
                         <div className="relative">
-                            <label htmlFor="password" className="sr-only">Password</label>
+                            <label htmlFor="password" className="mx-2 text-md font-semibold">Password</label>
                             <input
                                 id="password"
                                 name="password"
                                 type={showPassword ? "text" : "password"}
                                 required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm my-2"
                                 placeholder="Password"
                                 value={data.password}
                                 onChange={e => setData('password', e.target.value)}
                             />
                             <button
                                 type="button"
-                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                                className="absolute top-8 inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 z-10"
                                 onClick={() => setShowPassword(!showPassword)}
                             >
                                 {showPassword ? (

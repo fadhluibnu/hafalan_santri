@@ -13,16 +13,16 @@ export default function Layout({ children, title = 'Admin Cabang' }) {
     };
 
     return (
-        <div className="flex h-screen bg-gray-100">
+        <div className="flex h-screen bg-gray-200">
             {/* Sidebar */}
             <div className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white shadow-md transition-all duration-300 ease-in-out`}>
-                <div className="flex items-center justify-between p-4">
+                <div className={`p-4 flex items-center ${isSidebarOpen ? 'justify-between' : 'justify-center'}`}>
                     {isSidebarOpen ? (
-                        <span className="text-xl font-semibold text-gray-800">Hafalan Santri</span>
+                        <img src="/img/logo-pppa.png" alt="Logo" className="h-10 w-auto mx-auto" />
                     ) : (
-                        <span className="text-xl font-semibold text-gray-800">HS</span>
+                        <img src="/img/logo-pppa.png" alt="Logo" className="h-10 w-auto mx-auto hidden" />
                     )}
-                    <button onClick={toggleSidebar} className="rounded-full p-1 hover:bg-gray-100">
+                    <button onClick={toggleSidebar} className="p-1 rounded-full hover:bg-gray-100">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className="h-6 w-6 text-gray-600"
@@ -43,9 +43,10 @@ export default function Layout({ children, title = 'Admin Cabang' }) {
                     <div className="px-4 py-2">
                         <Link
                             href="/admin-cabang"
-                            className="flex items-center rounded-md px-4 py-2 text-gray-700 transition duration-150 ease-in-out hover:bg-green-100 hover:text-green-700"
+                            className={`flex items-center py-2 px-4 text-gray-700 hover:bg-green-100 hover:text-green-700 rounded-md transition duration-150 ease-in-out ${isSidebarOpen ? 'justify-start' : 'justify-center'}`}
+                            title="Dashboard"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${isSidebarOpen ? 'mr-3' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
@@ -53,15 +54,16 @@ export default function Layout({ children, title = 'Admin Cabang' }) {
                                     d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
                                 />
                             </svg>
-                            {isSidebarOpen && <span>Dashboard</span>}
+                            {isSidebarOpen && <span className='font-semibold text-md'>Dashboard</span>}
                         </Link>
                     </div>
                     <div className="px-4 py-2">
                         <Link
                             href="/admin-cabang/santri"
-                            className="flex items-center rounded-md px-4 py-2 text-gray-700 transition duration-150 ease-in-out hover:bg-green-100 hover:text-green-700"
+                            className={`flex items-center py-2 px-4 text-gray-700 hover:bg-green-100 hover:text-green-700 rounded-md transition duration-150 ease-in-out ${isSidebarOpen ? 'justify-start' : 'justify-center'}`}
+                            title="Santri"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${isSidebarOpen ? 'mr-3' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
@@ -69,7 +71,7 @@ export default function Layout({ children, title = 'Admin Cabang' }) {
                                     d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
                                 />
                             </svg>
-                            {isSidebarOpen && <span>Santri</span>}
+                            {isSidebarOpen && <span className='font-semibold text-md'>Santri</span>}
                         </Link>
                     </div>
                     <div className="px-4 py-2">
@@ -77,7 +79,7 @@ export default function Layout({ children, title = 'Admin Cabang' }) {
                             href="/admin-cabang/ustadz"
                             className="flex items-center rounded-md px-4 py-2 text-gray-700 transition duration-150 ease-in-out hover:bg-green-100 hover:text-green-700"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${isSidebarOpen ? 'mr-3' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
@@ -91,12 +93,13 @@ export default function Layout({ children, title = 'Admin Cabang' }) {
                     <div className="px-4 py-2">
                         <Link
                             href="/admin-cabang/struktur/kelas"
-                            className="flex items-center rounded-md px-4 py-2 text-gray-700 transition duration-150 ease-in-out hover:bg-green-100 hover:text-green-700"
+                            className={`flex items-center py-2 px-4 text-gray-700 hover:bg-green-100 hover:text-green-700 rounded-md transition duration-150 ease-in-out ${isSidebarOpen ? 'justify-start' : 'justify-center'}`}
+                            title="Struktur - Kelas"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${isSidebarOpen ? 'mr-3' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18M3 12h18M3 17h18" />
                             </svg>
-                            {isSidebarOpen && <span>Struktur - Kelas</span>}
+                            {isSidebarOpen && <span className='font-semibold text-md'>Penempatan Kelas</span>}
                         </Link>
                     </div>
                 </nav>
@@ -106,9 +109,10 @@ export default function Layout({ children, title = 'Admin Cabang' }) {
                         href="/logout"
                         method="get"
                         as="a"
-                        className="flex items-center rounded-md px-4 py-2 text-red-600 transition duration-150 ease-in-out hover:bg-red-100 hover:text-red-700"
+                        className={`flex items-center py-2 px-4 text-red-600 hover:bg-red-100 hover:text-red-700 rounded-md transition duration-150 ease-in-out ${isSidebarOpen ? 'justify-start' : 'justify-center'}`}
+                        title="Logout"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${isSidebarOpen ? 'mr-3' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
@@ -116,7 +120,7 @@ export default function Layout({ children, title = 'Admin Cabang' }) {
                                 d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1"
                             />
                         </svg>
-                        {isSidebarOpen && <span>Logout</span>}
+                        {isSidebarOpen && <span className='font-semibold text-md'>Logout</span>}
                     </Link>
                 </div>
             </div>

@@ -77,8 +77,8 @@ const Dashboard = ({ summary }) => {
                     
                     <div className="mt-6">
                         <div className="text-gray-500 mb-4">
-                            <p className="text-lg">Selamat datang di Panel Super Admin Sistem Hafalan Santri.</p>
-                            <p className="text-sm">Tanggal: {new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                            <p className="text-lg">Selamat datang di Sistem Manajemen Hafalan Santri.</p>
+                            <p className="text-sm">{new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                         </div>
                         
                         {/* Summary Cards */}
