@@ -84,7 +84,7 @@ const SantriEdit = ({ santri }) => {
 
     const onSubmit = (e) => {
         e.preventDefault();
-        post(route('admin-cabang.santri.update', santri.id));
+        post(route('admin-cabang.santri.update', { santri: santri.nis }));
     };
 
     const jkOptions = [

@@ -167,7 +167,9 @@
             <div class="stat-label">Total Setoran</div>
         </div>
         <div class="stat-box">
-            <div class="stat-number">{{ $hafalans->where('nilai', 'baik')->count() }}</div>
+            <div class="stat-number">
+                {{ $hafalans->filter(function ($h) {
+    return in_array($h->nilai, ['A', 'B', 'baik']); })->count() }}</div>
             <div class="stat-label">Nilai Baik</div>
         </div>
         <div class="stat-box">

@@ -1,13 +1,13 @@
 import { Link, router, usePage, useForm } from '@inertiajs/react';
-import { useMemo, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { route } from 'ziggy-js';
 import FormInput from '../../SuperAdmin/components/FormInput';
 import Table from '../../SuperAdmin/components/Table';
 import Layout from '../components/Layout';
 
 const SantriIndex = () => {
-    const { santris, flash } = usePage().props;
-    const [keyword, setKeyword] = useState('');
+    const { santris, flash, filters } = usePage().props;
+    const [keyword, setKeyword] = useState(filters?.search || '');
     const [rows, setRows] = useState(santris.data || []);
     const [showImportModal, setShowImportModal] = useState(false);
 
@@ -19,13 +19,20 @@ const SantriIndex = () => {
         setRows(santris.data || []);
     }, [santris]);
 
-    const filtered = useMemo(() => {
-        const q = keyword.toLowerCase();
-        return rows.filter((d) =>
-            (d.nama || '').toLowerCase().includes(q) ||
-            (d.kelas && d.kelas.nama ? d.kelas.nama.toLowerCase().includes(q) : '')
-        );
-    }, [rows, keyword]);
+    // Debounce search - query ke server setelah user berhenti mengetik
+    useEffect(() => {
+        const delayDebounceFn = setTimeout(() => {
+            if (keyword !== (filters?.search || '')) {
+                router.get(route('admin-cabang.santri.index'), { search: keyword }, {
+                    preserveState: true,
+                    preserveScroll: true,
+                    replace: true,
+                });
+            }
+        }, 500); // 500ms delay
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [keyword]);
 
     const handleDelete = (id) => {
         if (!confirm('Yakin ingin menghapus santri ini?')) return;
@@ -170,7 +177,7 @@ const SantriIndex = () => {
                             </Link>
                         </div>
                     </div>
-                    <Table columns={columns} data={filtered} actions={false} />
+                    <Table columns={columns} data={rows} actions={false} />
 
                     {/* Inline Pagination */}
                         <div className="mt-4 flex justify-between items-center flex-wrap gap-2">

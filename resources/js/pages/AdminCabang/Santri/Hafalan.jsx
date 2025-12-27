@@ -41,7 +41,7 @@ const SantriHafalan = ({ santri, hafalans = [] }) => {
                     </div>
                     <div className="bg-green-50 rounded-lg p-4 border border-green-200">
                         <div className="text-2xl font-bold text-green-700">
-                            {hafalans.filter(h => h.nilai === 'baik').length}
+                            {hafalans.filter(h => h.nilai === 'A' || h.nilai === 'B' || h.nilai?.toLowerCase() === 'baik').length}
                         </div>
                         <div className="text-sm text-green-600">Nilai Baik</div>
                     </div>
@@ -95,8 +95,8 @@ const SantriHafalan = ({ santri, hafalans = [] }) => {
                                             </td>
                                             <td className="px-4 py-3 text-sm">
                                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                                    h.nilai === 'baik' ? 'bg-green-100 text-green-800' :
-                                                    h.nilai === 'cukup' ? 'bg-yellow-100 text-yellow-800' :
+                                                    (h.nilai === 'A' || h.nilai === 'B' || h.nilai?.toLowerCase() === 'baik') ? 'bg-green-100 text-green-800' :
+                                                    (h.nilai === 'C' || h.nilai?.toLowerCase() === 'cukup') ? 'bg-yellow-100 text-yellow-800' :
                                                     'bg-red-100 text-red-800'
                                                 }`}>
                                                     {h.nilai}

@@ -25,6 +25,10 @@ class Hafalan extends Model
         'catatan',
     ];
 
+    protected $casts = [
+        'tanggal_setor' => 'date',
+    ];
+
     public function santri()
     {
         return $this->belongsTo(Santri::class, 'santri_id');

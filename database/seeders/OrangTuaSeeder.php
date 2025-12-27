@@ -16,6 +16,11 @@ class OrangTuaSeeder extends Seeder
     {
         $faker = Faker::create();
 
+        // Options sesuai dengan frontend
+        $statusOrtu = ['Hidup', 'Almarhum'];
+        $statusHubungan = ['Kandung', 'Tiri', 'Angkat'];
+        $pendidikanOptions = ['Tidak Sekolah', 'SD/Sederajat', 'SMP/Sederajat', 'SMA/Sederajat', 'D1', 'D2', 'D3', 'D4/S1', 'S2', 'S3'];
+
         foreach (Santri::all() as $santri) {
             // skip if parents already created for this santri
             if (OrangTua::where('santri_id', $santri->id)->exists()) {
@@ -27,11 +32,11 @@ class OrangTuaSeeder extends Seeder
                 'santri_id' => $santri->id,
                 'tipe' => 'Ayah',
                 'nama' => $faker->name('male'),
-                'status' => $faker->randomElement(['Hidup', 'Meninggal']),
-                'status_hubungan' => 'Kandung',
+                'status' => $faker->randomElement($statusOrtu),
+                'status_hubungan' => $faker->randomElement($statusHubungan),
                 'tempat_lahir' => $faker->city,
                 'tanggal_lahir' => $faker->dateTimeBetween('-70 years', '-30 years')->format('Y-m-d'),
-                'pendidikan' => $faker->randomElement(['SD','SMP','SMA','D3','S1','S2']),
+                'pendidikan' => $faker->randomElement($pendidikanOptions),
                 'pekerjaan' => $faker->randomElement(['Petani','Pedagang','Guru','Karyawan Swasta','Wiraswasta','PNS']),
                 'penghasilan' => (string) $faker->numberBetween(500000, 15000000),
                 'email' => "ayah.santri{$santri->id}@example.com",
@@ -44,11 +49,11 @@ class OrangTuaSeeder extends Seeder
                 'santri_id' => $santri->id,
                 'tipe' => 'Ibu',
                 'nama' => $faker->name('female'),
-                'status' => $faker->randomElement(['Hidup', 'Meninggal']),
-                'status_hubungan' => 'Kandung',
+                'status' => $faker->randomElement($statusOrtu),
+                'status_hubungan' => $faker->randomElement($statusHubungan),
                 'tempat_lahir' => $faker->city,
                 'tanggal_lahir' => $faker->dateTimeBetween('-65 years', '-25 years')->format('Y-m-d'),
-                'pendidikan' => $faker->randomElement(['SD','SMP','SMA','D3','S1']),
+                'pendidikan' => $faker->randomElement($pendidikanOptions),
                 'pekerjaan' => $faker->randomElement(['Ibu Rumah Tangga','Guru','Pedagang','Karyawan Swasta','Wiraswasta']),
                 'penghasilan' => (string) $faker->numberBetween(0, 10000000),
                 'email' => "ibu.santri{$santri->id}@example.com",

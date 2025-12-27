@@ -12,6 +12,8 @@ use App\Models\Santri;
 use App\Models\Hafalan;
 use App\Models\QuranSurah;
 use App\Models\Pondok;
+use App\Models\TahunAjaran;
+use App\Models\SantriKelas;
 use Carbon\Carbon;
 
 class LaporanController extends Controller
@@ -25,14 +27,26 @@ class LaporanController extends Controller
         $pondokId = $ustadz->pondok_id ?? null;
         $pondok = $pondokId ? Pondok::find($pondokId) : null;
 
+        // Get active tahun ajaran
+        $activeTahunAjaran = TahunAjaran::where('pondok_id', $pondokId)
+            ->where('is_active', true)
+            ->first();
+
         // daftar kelas & ustadz untuk select di UI
-        $classes = $pondokId ? Kelas::where('pondok_id', $pondokId)->select('id', 'nama', 'kapasitas')->orderBy('nama')->get() : collect();
+        $classes = $pondokId && $activeTahunAjaran
+            ? Kelas::where('pondok_id', $pondokId)
+                ->where('tahun_ajaran_id', $activeTahunAjaran->id)
+                ->select('id', 'nama', 'kapasitas')
+                ->orderBy('nama')
+                ->get()
+            : collect();
+
         $ustadzs = $pondokId ? Ustadz::where('pondok_id', $pondokId)->select('id', 'nama')->orderBy('nama')->get() : collect();
 
         // filters (kelas/ustadz/bulan/tahun/hariAktif)
         $filters = [
             'kelas_id'   => $request->input('kelas_id') ? (int)$request->input('kelas_id') : null,
-            'ustadz_id'    => $request->input('ustadz_id') ? (int)$request->input('ustadz_id') : null,
+            'ustadz_id'  => $request->input('ustadz_id') ? (int)$request->input('ustadz_id') : null,
             'bulan'      => $request->input('bulan') ?? date('m'),
             'tahun'      => $request->input('tahun') ?? date('Y'),
             'hariAktif'  => $request->input('hariAktif') ?? 24,
@@ -61,11 +75,17 @@ class LaporanController extends Controller
         $results = [];
         $santris = collect();
 
-        // jika kelas dipilih, ambil santri pada kelas tersebut
-        if ($filters['kelas_id']) {
-            $santris = Santri::where('pondok_id', $pondokId)
-                ->where('kelas_id', $filters['kelas_id'])
-                ->select('id', 'nama', 'jenis_kelamin')
+        // jika kelas dipilih, ambil santri pada kelas tersebut dari santri_kelas
+        if ($filters['kelas_id'] && $activeTahunAjaran) {
+            // Ambil santri_id dari santri_kelas untuk kelas dan tahun ajaran ini
+            $santriIds = SantriKelas::where('kelas_id', $filters['kelas_id'])
+                ->where('tahun_ajaran_id', $activeTahunAjaran->id)
+                ->where('status', 'aktif')
+                ->pluck('santri_id');
+
+            $santris = Santri::whereIn('id', $santriIds)
+                ->where('pondok_id', $pondokId)
+                ->select('id', 'nis', 'nama', 'jenis_kelamin')
                 ->orderBy('nama')
                 ->get();
         }
@@ -80,14 +100,15 @@ class LaporanController extends Controller
             $startPrev = $startCurrent->copy()->subMonth()->startOfMonth();
             $endPrev = $startPrev->copy()->endOfMonth();
 
-            $kelasId = $filters['kelas_id'];
+            $santriIdList = $santris->pluck('id')->toArray();
 
-            $hafalansPrev = Hafalan::where('kelas_id', $kelasId)
+            // Query hafalan berdasarkan santri_id, bukan kelas_id
+            $hafalansPrev = Hafalan::whereIn('santri_id', $santriIdList)
                 ->whereBetween('tanggal_setor', [$startPrev->toDateString(), $endPrev->toDateString()])
                 ->get()
                 ->groupBy('santri_id');
 
-            $hafalansCurr = Hafalan::where('kelas_id', $kelasId)
+            $hafalansCurr = Hafalan::whereIn('santri_id', $santriIdList)
                 ->whereBetween('tanggal_setor', [$startCurrent->toDateString(), $endCurrent->toDateString()])
                 ->get()
                 ->groupBy('santri_id');
@@ -141,6 +162,7 @@ class LaporanController extends Controller
             'santris'        => $santris,
             'results'        => $results,
             'initialFilters' => $filters,
+            'tahunAjaran'    => $activeTahunAjaran ? $activeTahunAjaran->nama : '-',
         ]);
     }
 

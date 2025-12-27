@@ -15,27 +15,62 @@ use App\Exports\SantriExport;
 use App\Exports\SantriTemplateExport;
 use App\Imports\SantriImport;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Models\SantriKelas;
+use App\Models\TahunAjaran;
 
 class SantriController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $pondok_id = AdminCabang::where('user_id', Auth::id())->with('pondok')->first();
-        $pondok_id = $pondok_id->pondok->id;
-        // Ambil data penting saja, termasuk total juz sah dan foto, dengan pagination
-        $santris = Santri::where('pondok_id', $pondok_id)->with(['kelas:id,nama', 'jus' => function($q) {
-            $q->where('status', 'sah');
-        }])
-            ->select('id', 'nis', 'nama', 'kelas_id', 'foto')
-            ->orderBy('nama')
-            ->paginate(10);
+        $adminCabang = AdminCabang::where('user_id', Auth::id())->with('pondok')->first();
+        $pondokId = $adminCabang->pondok->id;
 
-        // Tidak perlu transform, langsung kirim ke frontend
+        // Get active tahun ajaran
+        $activeTahunAjaran = TahunAjaran::where('pondok_id', $pondokId)
+            ->where('is_active', true)
+            ->first();
+
+        // Build query
+        $query = Santri::where('pondok_id', $pondokId)
+            ->with([
+                'jus' => function($q) {
+                    $q->where('status', 'sah');
+                },
+                'santriKelas' => function($q) use ($activeTahunAjaran) {
+                    if ($activeTahunAjaran) {
+                        $q->where('tahun_ajaran_id', $activeTahunAjaran->id)
+                          ->where('status', 'aktif')
+                          ->with('kelas:id,nama');
+                    }
+                }
+            ])
+            ->select('id', 'nis', 'nama', 'foto');
+
+        // Apply search filter
+        $search = $request->input('search');
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('nis', 'like', "%{$search}%");
+            });
+        }
+
+        $santris = $query->orderBy('nama')->paginate(10)->appends($request->only('search'));
+
+        // Transform untuk menambahkan kelas dari santri_kelas
+        $santris->getCollection()->transform(function ($santri) {
+            $kelasAktif = $santri->santriKelas->first();
+            $santri->kelas = $kelasAktif ? $kelasAktif->kelas : null;
+            unset($santri->santriKelas); // Hapus untuk menghindari nested data
+            return $santri;
+        });
+
         return Inertia::render('AdminCabang/Santri/Index', [
             'santris' => $santris,
+            'filters' => $request->only('search'),
         ]);
     }
 
@@ -246,13 +281,33 @@ class SantriController extends Controller
      */
     public function show(string $nis)
     {
-        // Ambil data santri berdasarkan NIS beserta relasi orang tua dan kesehatan
+        // Ambil pondok_id admin cabang
+        $adminCabang = AdminCabang::where('user_id', Auth::id())->first();
+        $pondokId = $adminCabang->pondok_id ?? null;
+
+        // Get active tahun ajaran
+        $activeTahunAjaran = TahunAjaran::where('pondok_id', $pondokId)
+            ->where('is_active', true)
+            ->first();
+
+        // Ambil data santri berdasarkan NIS beserta relasi
         $santri = Santri::with([
             'orangTuas',
             'kesehatanSantri',
-            'kelas:id,nama',
-            'pondok:id,nama'
+            'pondok:id,nama',
+            'santriKelas' => function($q) use ($activeTahunAjaran) {
+                if ($activeTahunAjaran) {
+                    $q->where('tahun_ajaran_id', $activeTahunAjaran->id)
+                      ->where('status', 'aktif')
+                      ->with('kelas:id,nama');
+                }
+            }
         ])->where('nis', $nis)->firstOrFail();
+
+        // Get kelas aktif dari santri_kelas
+        $kelasAktif = $santri->santriKelas->first();
+        $kelasNama = $kelasAktif ? $kelasAktif->kelas?->nama : null;
+        $kelasId = $kelasAktif ? $kelasAktif->kelas_id : null;
 
         // Format data orang tua agar mudah diakses di frontend
         $ayah = $santri->orangTuas->where('tipe', 'Ayah')->first();
@@ -285,8 +340,8 @@ class SantriController extends Controller
                 'hobi' => $santri->hobi,
                 'foto' => $santri->foto,
                 'pondok_id' => $santri->pondok_id,
-                'kelas_id' => $santri->kelas_id,
-                'kelas_nama' => $santri->kelas ? $santri->kelas->nama : null,
+                'kelas_id' => $kelasId,
+                'kelas_nama' => $kelasNama,
                 'pondok_nama' => $santri->pondok ? $santri->pondok->nama : null,
                 // Orang tua
                 'ayah' => $ayah,
@@ -327,7 +382,7 @@ class SantriController extends Controller
                 'panggilan' => $santri->panggilan,
                 'jenis_kelamin' => $santri->jenis_kelamin,
                 'tempat_lahir' => $santri->tempat_lahir,
-                'tanggal_lahir' => $santri->tanggal_lahir,
+                'tanggal_lahir' => $santri->tanggal_lahir?->format('Y-m-d'),
                 'status_mukim' => $santri->status_mukim,
                 'kondisi' => $santri->kondisi,
                 'warga_negara' => $santri->warga_negara,
@@ -349,7 +404,7 @@ class SantriController extends Controller
                 'ayah_status' => $ayah?->status,
                 'ayah_status_hubungan' => $ayah?->status_hubungan,
                 'ayah_tempat_lahir' => $ayah?->tempat_lahir,
-                'ayah_tanggal_lahir' => $ayah?->tanggal_lahir,
+                'ayah_tanggal_lahir' => $ayah?->tanggal_lahir?->format('Y-m-d'),
                 'ayah_pendidikan' => $ayah?->pendidikan,
                 'ayah_pekerjaan' => $ayah?->pekerjaan,
                 'ayah_penghasilan' => $ayah?->penghasilan,
@@ -361,7 +416,7 @@ class SantriController extends Controller
                 'ibu_status' => $ibu?->status,
                 'ibu_status_hubungan' => $ibu?->status_hubungan,
                 'ibu_tempat_lahir' => $ibu?->tempat_lahir,
-                'ibu_tanggal_lahir' => $ibu?->tanggal_lahir,
+                'ibu_tanggal_lahir' => $ibu?->tanggal_lahir?->format('Y-m-d'),
                 'ibu_pendidikan' => $ibu?->pendidikan,
                 'ibu_pekerjaan' => $ibu?->pekerjaan,
                 'ibu_penghasilan' => $ibu?->penghasilan,
@@ -373,7 +428,7 @@ class SantriController extends Controller
                 'wali_status' => $wali?->status,
                 'wali_status_hubungan' => $wali?->status_hubungan,
                 'wali_tempat_lahir' => $wali?->tempat_lahir,
-                'wali_tanggal_lahir' => $wali?->tanggal_lahir,
+                'wali_tanggal_lahir' => $wali?->tanggal_lahir?->format('Y-m-d'),
                 'wali_pendidikan' => $wali?->pendidikan,
                 'wali_pekerjaan' => $wali?->pekerjaan,
                 'wali_penghasilan' => $wali?->penghasilan,
@@ -392,12 +447,12 @@ class SantriController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $nis)
     {
         DB::beginTransaction();
         try {
-            // Ambil data santri
-            $santri = Santri::with(['orangTuas', 'kesehatanSantri'])->findOrFail($id);
+            // Ambil data santri berdasarkan NIS
+            $santri = Santri::with(['orangTuas', 'kesehatanSantri'])->where('nis', $nis)->firstOrFail();
 
             // Validasi request
             $validated = $request->validate([
@@ -628,7 +683,7 @@ class SantriController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('admin-cabang.santri.show', $santri->id)
+            return redirect()->route('admin-cabang.santri.show', $santri->nis)
                 ->with('success', 'Data santri berhasil diperbarui.');
         } catch (\Exception $e) {
             DB::rollBack();

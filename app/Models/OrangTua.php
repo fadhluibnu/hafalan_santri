@@ -26,6 +26,10 @@ class OrangTua extends Model
         'alamat',
     ];
 
+    protected $casts = [
+        'tanggal_lahir' => 'date',
+    ];
+
     /**
      * Relasi ke Santri.
      */

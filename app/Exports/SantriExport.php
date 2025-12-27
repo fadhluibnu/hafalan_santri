@@ -4,6 +4,7 @@ namespace App\Exports;
 
 use App\Models\Santri;
 use App\Models\AdminCabang;
+use App\Models\TahunAjaran;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -14,17 +15,34 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 class SantriExport implements FromCollection, WithHeadings, WithMapping, WithStyles
 {
     protected $pondokId;
+    protected $activeTahunAjaranId;
 
     public function __construct()
     {
         $adminCabang = AdminCabang::where('user_id', Auth::id())->first();
         $this->pondokId = $adminCabang ? $adminCabang->pondok_id : null;
+        
+        // Get active tahun ajaran
+        $activeTahunAjaran = TahunAjaran::where('pondok_id', $this->pondokId)
+            ->where('is_active', true)
+            ->first();
+        $this->activeTahunAjaranId = $activeTahunAjaran?->id;
     }
 
     public function collection()
     {
         return Santri::where('pondok_id', $this->pondokId)
-            ->with(['kelas:id,nama', 'orangTuas', 'kesehatanSantri'])
+            ->with([
+                'orangTuas', 
+                'kesehatanSantri',
+                'santriKelas' => function($q) {
+                    if ($this->activeTahunAjaranId) {
+                        $q->where('tahun_ajaran_id', $this->activeTahunAjaranId)
+                          ->where('status', 'aktif')
+                          ->with('kelas:id,nama');
+                    }
+                }
+            ])
             ->orderBy('nama')
             ->get();
     }
@@ -107,6 +125,10 @@ class SantriExport implements FromCollection, WithHeadings, WithMapping, WithSty
         $wali = $santri->orangTuas->where('tipe', 'Wali')->first();
         $kesehatan = $santri->kesehatanSantri;
 
+        // Get kelas dari santri_kelas
+        $kelasAktif = $santri->santriKelas->first();
+        $kelasNama = $kelasAktif ? $kelasAktif->kelas?->nama : '';
+
         return [
             // Data Santri
             $santri->nis,
@@ -130,7 +152,7 @@ class SantriExport implements FromCollection, WithHeadings, WithMapping, WithSty
             $santri->handphone,
             $santri->email,
             $santri->hobi,
-            $santri->kelas ? $santri->kelas->nama : '',
+            $kelasNama,
             // Data Ayah
             $ayah?->nama,
             $ayah?->status,
@@ -182,4 +204,3 @@ class SantriExport implements FromCollection, WithHeadings, WithMapping, WithSty
         ];
     }
 }
-
