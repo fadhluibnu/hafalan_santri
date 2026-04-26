@@ -13,6 +13,8 @@ use App\Models\Kelas;
 use App\Models\Santri;
 use App\Models\Hafalan;
 use App\Models\QuranSurah;
+use App\Models\SantriKelas;
+use App\Models\TahunAjaran;
 
 class HafalanController extends Controller
 {
@@ -61,24 +63,56 @@ class HafalanController extends Controller
         // Ambil ustadz yang login untuk mengetahui pondok
         $ustadz = Ustadz::where('user_id', Auth::id())->first();
         $pondokId = $ustadz->pondok_id ?? null;
+        $activeTahunAjaran = TahunAjaran::where('pondok_id', $pondokId)
+            ->where('is_active', true)
+            ->first();
 
         // Ambil kelas untuk pondok
-        $classes = $pondokId ? Kelas::where('pondok_id', $pondokId)->select('id', 'nama')->orderBy('nama')->get() : collect();
+        $classesQuery = $pondokId
+            ? Kelas::where('pondok_id', $pondokId)->select('id', 'nama', 'tahun_ajaran_id')->orderBy('nama')
+            : Kelas::query()->whereRaw('1=0');
+        if ($activeTahunAjaran) {
+            $classesQuery->where('tahun_ajaran_id', $activeTahunAjaran->id);
+        }
+        $classes = $classesQuery->get();
 
-        // Ambil santri pondok dan group by kelas_id (dipakai frontend untuk menampilkan santri berdasarkan kelas terpilih)
-        $santris = $pondokId
-            ? Santri::where('pondok_id', $pondokId)->select('id', 'nis', 'nama', 'kelas_id')->orderBy('nama')->get()
-            : collect();
+        // Ambil santri berdasarkan penempatan aktif di santri_kelas
+        $santriPlacementQuery = SantriKelas::with('santri:id,nis,nama,pondok_id')
+            ->where('status', 'aktif')
+            ->whereHas('santri', function ($q) use ($pondokId) {
+                $q->where('pondok_id', $pondokId);
+            });
+        if ($activeTahunAjaran) {
+            $santriPlacementQuery->where('tahun_ajaran_id', $activeTahunAjaran->id);
+        }
 
-        $santrisByClass = $santris->groupBy('kelas_id')->map(function ($group) {
-            return $group->map(function ($s) {
+        $santrisByClass = $santriPlacementQuery->get()
+            ->groupBy('kelas_id')
+            ->map(function ($group, $kelasId) {
+                return $group->map(function ($placement) use ($kelasId) {
+                    $s = $placement->santri;
+                    if (!$s) {
+                        return null;
+                    }
+
                 return [
-                    'id' => $s->id,
-                    'nis' => $s->nis ?? null,
-                    'nama' => $s->nama,
-                    'kelas_id' => $s->kelas_id,
-                ];
-            })->values();
+                        'id' => $s->id,
+                        'nis' => $s->nis ?? null,
+                        'nama' => $s->nama,
+                        'kelas_id' => (int) $kelasId,
+                    ];
+                })->filter()->values();
+            });
+
+        // pastikan kelas tanpa santri tetap memiliki key array kosong supaya frontend aman
+        $classes->each(function ($kelas) use (&$santrisByClass) {
+            if (!$santrisByClass->has($kelas->id)) {
+                $santrisByClass->put($kelas->id, collect());
+            }
+        });
+
+        $santrisByClass = $santrisByClass->map(function ($items) {
+            return $items->values();
         });
 
         // Ambil daftar ustadz di pondok agar bisa memilih (biasanya ustadz sendiri sudah default)
@@ -147,8 +181,17 @@ class HafalanController extends Controller
             if ($pondokId && $santri->pondok_id !== $pondokId) {
                 throw new \Exception('Santri tidak berada di pondok Anda.');
             }
-            // Pastikan santri sesuai dengan kelas
-            if ((int)$santri->kelas_id !== (int)$kelas->id) {
+
+            $isAssignedToKelas = SantriKelas::query()
+                ->where('santri_id', $santri->id)
+                ->where('kelas_id', $kelas->id)
+                ->where('status', 'aktif')
+                ->when($kelas->tahun_ajaran_id, function ($q) use ($kelas) {
+                    $q->where('tahun_ajaran_id', $kelas->tahun_ajaran_id);
+                })
+                ->exists();
+
+            if (!$isAssignedToKelas) {
                 throw new \Exception('Santri tidak terdaftar di kelas yang dipilih.');
             }
 
@@ -195,6 +238,9 @@ class HafalanController extends Controller
     {
         $ustadz = Ustadz::where('user_id', Auth::id())->first();
         $pondokId = $ustadz->pondok_id ?? null;
+        $activeTahunAjaran = TahunAjaran::where('pondok_id', $pondokId)
+            ->where('is_active', true)
+            ->first();
 
         // Get hafalan data
         $hafalan = Hafalan::with(['santri', 'kelas', 'ustadz', 'dariSurah', 'sampaiSurah'])->findOrFail($id);
@@ -205,22 +251,49 @@ class HafalanController extends Controller
         }
 
         // Ambil kelas untuk pondok
-        $classes = $pondokId ? Kelas::where('pondok_id', $pondokId)->select('id', 'nama')->orderBy('nama')->get() : collect();
+        $classesQuery = $pondokId
+            ? Kelas::where('pondok_id', $pondokId)->select('id', 'nama', 'tahun_ajaran_id')->orderBy('nama')
+            : Kelas::query()->whereRaw('1=0');
+        if ($activeTahunAjaran) {
+            $classesQuery->where('tahun_ajaran_id', $activeTahunAjaran->id);
+        }
+        $classes = $classesQuery->get();
 
-        // Ambil santri pondok dan group by kelas_id
-        $santris = $pondokId
-            ? Santri::where('pondok_id', $pondokId)->select('id', 'nis', 'nama', 'kelas_id')->orderBy('nama')->get()
-            : collect();
+        $santriPlacementQuery = SantriKelas::with('santri:id,nis,nama,pondok_id')
+            ->where('status', 'aktif')
+            ->whereHas('santri', function ($q) use ($pondokId) {
+                $q->where('pondok_id', $pondokId);
+            });
+        if ($activeTahunAjaran) {
+            $santriPlacementQuery->where('tahun_ajaran_id', $activeTahunAjaran->id);
+        }
 
-        $santrisByClass = $santris->groupBy('kelas_id')->map(function ($group) {
-            return $group->map(function ($s) {
+        $santrisByClass = $santriPlacementQuery->get()
+            ->groupBy('kelas_id')
+            ->map(function ($group, $kelasId) {
+                return $group->map(function ($placement) use ($kelasId) {
+                    $s = $placement->santri;
+                    if (!$s) {
+                        return null;
+                    }
+
                 return [
-                    'id' => $s->id,
-                    'nis' => $s->nis ?? null,
-                    'nama' => $s->nama,
-                    'kelas_id' => $s->kelas_id,
-                ];
-            })->values();
+                        'id' => $s->id,
+                        'nis' => $s->nis ?? null,
+                        'nama' => $s->nama,
+                        'kelas_id' => (int) $kelasId,
+                    ];
+                })->filter()->values();
+            });
+
+        $classes->each(function ($kelas) use (&$santrisByClass) {
+            if (!$santrisByClass->has($kelas->id)) {
+                $santrisByClass->put($kelas->id, collect());
+            }
+        });
+
+        $santrisByClass = $santrisByClass->map(function ($items) {
+            return $items->values();
         });
 
         // Ambil daftar ustadz
@@ -282,6 +355,30 @@ class HafalanController extends Controller
 
             if ($pondokId && $hafalan->kelas->pondok_id !== $pondokId) {
                 abort(403, 'Anda tidak berwenang memperbarui data ini.');
+            }
+
+            $kelas = Kelas::findOrFail($validated['kelas_id']);
+            $santri = Santri::findOrFail($validated['santri_id']);
+
+            if ($pondokId && $kelas->pondok_id !== $pondokId) {
+                throw new \Exception('Kelas tidak ditemukan di pondok Anda.');
+            }
+
+            if ($pondokId && $santri->pondok_id !== $pondokId) {
+                throw new \Exception('Santri tidak berada di pondok Anda.');
+            }
+
+            $isAssignedToKelas = SantriKelas::query()
+                ->where('santri_id', $santri->id)
+                ->where('kelas_id', $kelas->id)
+                ->where('status', 'aktif')
+                ->when($kelas->tahun_ajaran_id, function ($q) use ($kelas) {
+                    $q->where('tahun_ajaran_id', $kelas->tahun_ajaran_id);
+                })
+                ->exists();
+
+            if (!$isAssignedToKelas) {
+                throw new \Exception('Santri tidak terdaftar di kelas yang dipilih.');
             }
 
             $hafalan->update([

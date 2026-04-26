@@ -51,6 +51,11 @@ class TahunAjaran extends Model
         return $this->hasMany(SantriKelas::class);
     }
 
+    public function ujians()
+    {
+        return $this->hasMany(Ujian::class);
+    }
+
     /**
      * Scope untuk tahun ajaran aktif
      */

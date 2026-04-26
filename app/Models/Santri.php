@@ -115,6 +115,11 @@ class Santri extends Model
         return $this->hasMany(SantriKelas::class);
     }
 
+    public function ujianNilais()
+    {
+        return $this->hasMany(UjianNilai::class);
+    }
+
     /**
      * Get penempatan kelas aktif saat ini
      */
@@ -139,4 +144,3 @@ class Santri extends Model
         return $query->whereIn('status_santri', ['lulus', 'alumni']);
     }
 }
-

@@ -56,5 +56,9 @@ class Kelas extends Model
     {
         return $this->santriKelas()->where('status', 'aktif');
     }
-}
 
+    public function ujians()
+    {
+        return $this->hasMany(Ujian::class);
+    }
+}

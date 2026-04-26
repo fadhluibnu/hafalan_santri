@@ -44,4 +44,14 @@ class Pondok extends Model
     {
         return $this->hasMany(Kelas::class);
     }
+
+    public function skemaPenilaian()
+    {
+        return $this->hasOne(SkemaPenilaian::class);
+    }
+
+    public function ujians(): HasMany
+    {
+        return $this->hasMany(Ujian::class);
+    }
 }

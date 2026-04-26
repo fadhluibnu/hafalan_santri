@@ -45,4 +45,9 @@ class Ustadz extends Model
     {
         return $this->belongsTo(Pondok::class);
     }
+
+    public function ujians()
+    {
+        return $this->hasMany(Ujian::class);
+    }
 }

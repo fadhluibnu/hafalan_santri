@@ -5,8 +5,8 @@ use App\Http\Controllers\SuperAdmin\DashboardController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\SuperAdmin\AdminCabangController;
 use App\Http\Controllers\SuperAdmin\PondokController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 use App\Http\Controllers\AdminCabang\KelasController;
 
 Route::get('/', function () {
@@ -31,6 +31,21 @@ Route::prefix('super-admin')
 
         // AdminCabang Routes
         Route::resource('admin-cabang', AdminCabangController::class);
+
+        // Ujian monitor (read-only)
+        Route::get('ujian', [\App\Http\Controllers\SuperAdmin\UjianController::class, 'index'])->name('ujian.index');
+        Route::get('ujian/{id}', [\App\Http\Controllers\SuperAdmin\UjianController::class, 'show'])->name('ujian.show');
+
+        // Laporan
+        Route::get('laporan', [ReportController::class, 'daftarSantri'])->name('laporan');
+        Route::get('laporan/daftar-santri', [ReportController::class, 'daftarSantri'])->name('laporan.daftar-santri');
+        Route::get('laporan/cetak-santri', [ReportController::class, 'cetakSantri'])->name('laporan.cetak-santri');
+        Route::get('laporan/cetak-santri/{nis}/pdf', [ReportController::class, 'cetakSantriPdf'])->name('laporan.cetak-santri.pdf');
+        Route::get('laporan/ujian', [ReportController::class, 'laporanUjian'])->name('laporan.ujian');
+        Route::get('laporan/ujian/{id}', [ReportController::class, 'laporanUjianDetail'])->name('laporan.ujian.detail');
+        Route::get('laporan/ujian/{id}/pdf', [ReportController::class, 'laporanUjianPdf'])->name('laporan.ujian.pdf');
+        Route::get('laporan/raport', [ReportController::class, 'raport'])->name('laporan.raport');
+        Route::get('laporan/raport/{nis}/pdf', [ReportController::class, 'raportPdf'])->name('laporan.raport.pdf');
     });
 
 Route::prefix('admin-cabang')
@@ -66,6 +81,10 @@ Route::prefix('admin-cabang')
         Route::post('tahun-ajaran/{id}/set-active', [\App\Http\Controllers\AdminCabang\TahunAjaranController::class, 'setActive'])->name('tahun-ajaran.set-active');
         Route::post('tahun-ajaran/{id}/close', [\App\Http\Controllers\AdminCabang\TahunAjaranController::class, 'close'])->name('tahun-ajaran.close');
 
+        // Skema Penilaian Dinamis
+        Route::get('skema-penilaian', [\App\Http\Controllers\AdminCabang\SkemaPenilaianController::class, 'edit'])->name('skema-penilaian.edit');
+        Route::put('skema-penilaian', [\App\Http\Controllers\AdminCabang\SkemaPenilaianController::class, 'update'])->name('skema-penilaian.update');
+
         // Ganti blok closure sebelumnya dengan resource controller untuk struktur/kelas
         Route::resource('struktur/kelas', KelasController::class)
             ->names([
@@ -83,6 +102,21 @@ Route::prefix('admin-cabang')
             ->name('struktur.kelas.manage_santri');
         Route::post('struktur/kelas/{id}/santri', [KelasController::class, 'storeSanTri'])
             ->name('struktur.kelas.manage_santri.store');
+
+        // Ujian monitor (read-only)
+        Route::get('ujian', [\App\Http\Controllers\AdminCabang\UjianController::class, 'index'])->name('ujian.index');
+        Route::get('ujian/{id}', [\App\Http\Controllers\AdminCabang\UjianController::class, 'show'])->name('ujian.show');
+
+        // Laporan
+        Route::get('laporan', [ReportController::class, 'daftarSantri'])->name('laporan');
+        Route::get('laporan/daftar-santri', [ReportController::class, 'daftarSantri'])->name('laporan.daftar-santri');
+        Route::get('laporan/cetak-santri', [ReportController::class, 'cetakSantri'])->name('laporan.cetak-santri');
+        Route::get('laporan/cetak-santri/{nis}/pdf', [ReportController::class, 'cetakSantriPdf'])->name('laporan.cetak-santri.pdf');
+        Route::get('laporan/ujian', [ReportController::class, 'laporanUjian'])->name('laporan.ujian');
+        Route::get('laporan/ujian/{id}', [ReportController::class, 'laporanUjianDetail'])->name('laporan.ujian.detail');
+        Route::get('laporan/ujian/{id}/pdf', [ReportController::class, 'laporanUjianPdf'])->name('laporan.ujian.pdf');
+        Route::get('laporan/raport', [ReportController::class, 'raport'])->name('laporan.raport');
+        Route::get('laporan/raport/{nis}/pdf', [ReportController::class, 'raportPdf'])->name('laporan.raport.pdf');
     });
 
 // Ustadz Routes (menggantikan Guru Routes)
@@ -95,13 +129,26 @@ Route::prefix('ustadz')
         // gunakan resource controller agar route names standard tersedia (index, create, store, show, edit, update, destroy)
         Route::resource('/hafalan', \App\Http\Controllers\Ustadz\HafalanController::class);
 
+        // Ujian (ustadz full access)
+        Route::resource('/ujian', \App\Http\Controllers\Ustadz\UjianController::class)
+            ->only(['index', 'create', 'store', 'show', 'destroy']);
+        Route::put('/ujian/{id}/nilai', [\App\Http\Controllers\Ustadz\UjianController::class, 'updateNilai'])->name('ujian.nilai.update');
+        Route::patch('/ujian/{id}/status', [\App\Http\Controllers\Ustadz\UjianController::class, 'updateStatus'])->name('ujian.status.update');
+
         // Santri routes (read-only untuk ustadz)
         Route::get('/santri', [\App\Http\Controllers\Ustadz\SantriController::class, 'index'])->name('santri.index');
         Route::get('/santri/{nis}', [\App\Http\Controllers\Ustadz\SantriController::class, 'show'])->name('santri.show');
         Route::get('/santri/{nis}/hafalan', [\App\Http\Controllers\Ustadz\SantriController::class, 'hafalan'])->name('santri.hafalan');
         Route::get('/santri/{nis}/hafalan/pdf', [\App\Http\Controllers\Ustadz\SantriController::class, 'exportPdf'])->name('santri.hafalan.pdf');
 
-        // Laporan - gunakan controller agar dinamis
-        Route::get('/laporan', [\App\Http\Controllers\Ustadz\LaporanController::class, 'index'])->name('laporan');
+        // Laporan
+        Route::get('/laporan', [ReportController::class, 'daftarSantri'])->name('laporan');
+        Route::get('/laporan/daftar-santri', [ReportController::class, 'daftarSantri'])->name('laporan.daftar-santri');
+        Route::get('/laporan/cetak-santri', [ReportController::class, 'cetakSantri'])->name('laporan.cetak-santri');
+        Route::get('/laporan/cetak-santri/{nis}/pdf', [ReportController::class, 'cetakSantriPdf'])->name('laporan.cetak-santri.pdf');
+        Route::get('/laporan/ujian', [ReportController::class, 'laporanUjian'])->name('laporan.ujian');
+        Route::get('/laporan/ujian/{id}', [ReportController::class, 'laporanUjianDetail'])->name('laporan.ujian.detail');
+        Route::get('/laporan/ujian/{id}/pdf', [ReportController::class, 'laporanUjianPdf'])->name('laporan.ujian.pdf');
+        Route::get('/laporan/raport', [ReportController::class, 'raport'])->name('laporan.raport');
+        Route::get('/laporan/raport/{nis}/pdf', [ReportController::class, 'raportPdf'])->name('laporan.raport.pdf');
     });
-

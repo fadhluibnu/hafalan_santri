@@ -124,6 +124,18 @@ export default function Layout({ children, title = 'Admin Cabang' }) {
                     </div>
                     <div className="px-4 py-2">
                         <Link
+                            href="/admin-cabang/skema-penilaian"
+                            className={`flex items-center py-2 px-4 text-gray-700 hover:bg-green-100 hover:text-green-700 rounded-md transition duration-150 ease-in-out ${isSidebarOpen ? 'justify-start' : 'justify-center'}`}
+                            title="Skema Penilaian"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${isSidebarOpen ? 'mr-3' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12m-6-6h12" />
+                            </svg>
+                            {isSidebarOpen && <span className='font-semibold text-md'>Skema Penilaian</span>}
+                        </Link>
+                    </div>
+                    <div className="px-4 py-2">
+                        <Link
                             href="/admin-cabang/tahun-ajaran"
                             className={`flex items-center py-2 px-4 text-gray-700 hover:bg-green-100 hover:text-green-700 rounded-md transition duration-150 ease-in-out ${isSidebarOpen ? 'justify-start' : 'justify-center'}`}
                             title="Tahun Ajaran"
@@ -144,6 +156,30 @@ export default function Layout({ children, title = 'Admin Cabang' }) {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18M3 12h18M3 17h18" />
                             </svg>
                             {isSidebarOpen && <span className='font-semibold text-md'>Penempatan Kelas</span>}
+                        </Link>
+                    </div>
+                    <div className="px-4 py-2">
+                        <Link
+                            href="/admin-cabang/ujian"
+                            className={`flex items-center py-2 px-4 text-gray-700 hover:bg-green-100 hover:text-green-700 rounded-md transition duration-150 ease-in-out ${isSidebarOpen ? 'justify-start' : 'justify-center'}`}
+                            title="Ujian"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${isSidebarOpen ? 'mr-3' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6M7 4h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2z" />
+                            </svg>
+                            {isSidebarOpen && <span className='font-semibold text-md'>Ujian</span>}
+                        </Link>
+                    </div>
+                    <div className="px-4 py-2">
+                        <Link
+                            href="/admin-cabang/laporan"
+                            className={`flex items-center py-2 px-4 text-gray-700 hover:bg-green-100 hover:text-green-700 rounded-md transition duration-150 ease-in-out ${isSidebarOpen ? 'justify-start' : 'justify-center'}`}
+                            title="Laporan"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${isSidebarOpen ? 'mr-3' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2h6v2m-7 4h8a2 2 0 002-2v-8a2 2 0 00-2-2h-1V5a2 2 0 00-2-2H9a2 2 0 00-2 2v2H6a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                            {isSidebarOpen && <span className='font-semibold text-md'>Laporan</span>}
                         </Link>
                     </div>
                 </nav>
@@ -241,4 +277,3 @@ export default function Layout({ children, title = 'Admin Cabang' }) {
         </>
     );
 }
-

@@ -78,6 +78,17 @@ export default function Layout({ children, title }) {
                     </div>
                     <div className="px-4 py-2">
                         <Link
+                            href="/ustadz/ujian"
+                            className="flex items-center rounded-md px-4 py-2 text-gray-700 transition duration-150 ease-in-out hover:bg-green-100 hover:text-green-700"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6M7 4h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2z" />
+                            </svg>
+                            {isSidebarOpen && <span>Ujian</span>}
+                        </Link>
+                    </div>
+                    <div className="px-4 py-2">
+                        <Link
                             href="/ustadz/santri"
                             className="flex items-center rounded-md px-4 py-2 text-gray-700 transition duration-150 ease-in-out hover:bg-green-100 hover:text-green-700"
                         >

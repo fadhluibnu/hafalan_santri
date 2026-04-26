@@ -92,6 +92,28 @@ export default function Layout({ children, title }) {
                             {isSidebarOpen && <span>Admin Cabang</span>}
                         </Link>
                     </div>
+                    <div className="px-4 py-2">
+                        <Link
+                            href="/super-admin/ujian"
+                            className="flex items-center rounded-md px-4 py-2 text-gray-700 transition duration-150 ease-in-out hover:bg-green-100 hover:text-green-700"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6M7 4h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2z" />
+                            </svg>
+                            {isSidebarOpen && <span>Ujian</span>}
+                        </Link>
+                    </div>
+                    <div className="px-4 py-2">
+                        <Link
+                            href="/super-admin/laporan"
+                            className="flex items-center rounded-md px-4 py-2 text-gray-700 transition duration-150 ease-in-out hover:bg-green-100 hover:text-green-700"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2h6v2m-7 4h8a2 2 0 002-2v-8a2 2 0 00-2-2h-1V5a2 2 0 00-2-2H9a2 2 0 00-2 2v2H6a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                            {isSidebarOpen && <span>Laporan</span>}
+                        </Link>
+                    </div>
                 </nav>
                 {/* Tambahkan menu logout */}
                 <div className="mt-4 border-t px-4 py-2">
