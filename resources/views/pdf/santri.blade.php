@@ -283,6 +283,7 @@
                 <thead>
                     <tr>
                         <th>No</th>
+                        <th>Kelas</th>
                         <th>Tanggal</th>
                         <th>Juz</th>
                         <th>Dari Surat</th>
@@ -296,6 +297,7 @@
                     @foreach($hafalans as $index => $hafalan)
                         <tr>
                             <td>{{ $index + 1 }}</td>
+                            <td>{{ $hafalan->kelas->nama ?? '-' }}</td>
                             <td>{{ $hafalan->tanggal_setor }}</td>
                             <td>{{ $hafalan->juz }}</td>
                             <td>{{ $hafalan->dariSurah->name ?? '-' }} : {{ $hafalan->dari_ayat }}</td>

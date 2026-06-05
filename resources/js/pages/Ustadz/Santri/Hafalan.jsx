@@ -60,6 +60,7 @@ const SantriHafalan = ({ santri, hafalans = [] }) => {
                             <thead className="bg-gray-50">
                                 <tr>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kelas</th>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Juz</th>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dari Surat</th>
@@ -72,7 +73,7 @@ const SantriHafalan = ({ santri, hafalans = [] }) => {
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {hafalans.length === 0 ? (
                                     <tr>
-                                        <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
+                                        <td colSpan={9} className="px-4 py-8 text-center text-gray-500">
                                             Belum ada data setoran hafalan
                                         </td>
                                     </tr>
@@ -80,6 +81,7 @@ const SantriHafalan = ({ santri, hafalans = [] }) => {
                                     hafalans.map((h, idx) => (
                                         <tr key={h.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                                             <td className="px-4 py-3 text-sm text-gray-900">{idx + 1}</td>
+                                            <td className="px-4 py-3 text-sm text-gray-900">{h.kelas || '-'}</td>
                                             <td className="px-4 py-3 text-sm text-gray-900">{h.tanggal_setor}</td>
                                             <td className="px-4 py-3 text-sm text-gray-900">{h.juz}</td>
                                             <td className="px-4 py-3 text-sm text-gray-900">{h.dari_surat} : {h.dari_ayat}</td>

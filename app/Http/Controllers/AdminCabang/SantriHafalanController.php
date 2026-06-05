@@ -50,18 +50,19 @@ class SantriHafalanController extends Controller
         $kelasNama = $kelasAktif ? $kelasAktif->kelas?->nama : '-';
 
         // Get all hafalan for this santri
-        $hafalans = Hafalan::with(['dariSurah', 'sampaiSurah', 'ustadz'])
+        $hafalans = Hafalan::with(['dariSurah', 'sampaiSurah', 'ustadz', 'kelas:id,nama'])
             ->where('santri_id', $santri->id)
             ->orderBy('tanggal_setor', 'desc')
             ->get()
             ->map(function ($h) {
                 return [
                     'id' => $h->id,
+                    'kelas' => $h->kelas?->nama ?? '-',
                     'tanggal_setor' => $h->tanggal_setor?->format('Y-m-d'),
                     'juz' => $h->juz,
-                    'dari_surat' => $h->dariSurah->nama ?? '-',
+                    'dari_surat' => $h->dariSurah->name ?? '-',
                     'dari_ayat' => $h->dari_ayat,
-                    'sampai_surat' => $h->sampaiSurah->nama ?? '-',
+                    'sampai_surat' => $h->sampaiSurah->name ?? '-',
                     'sampai_ayat' => $h->sampai_ayat,
                     'kategori' => $h->kategori,
                     'nilai' => $h->nilai,
@@ -119,7 +120,7 @@ class SantriHafalanController extends Controller
         $kelasNama = $kelasAktif ? $kelasAktif->kelas?->nama : '-';
 
         // Get all hafalan for this santri
-        $hafalans = Hafalan::with(['dariSurah', 'sampaiSurah', 'ustadz'])
+        $hafalans = Hafalan::with(['dariSurah', 'sampaiSurah', 'ustadz', 'kelas:id,nama'])
             ->where('santri_id', $santri->id)
             ->orderBy('tanggal_setor', 'desc')
             ->get();

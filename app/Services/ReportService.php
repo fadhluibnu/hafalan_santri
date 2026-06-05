@@ -93,6 +93,8 @@ class ReportService
         $placements = $query
             ->orderBy('kelas_id')
             ->orderBy('santri_id')
+            ->orderByDesc('tanggal_masuk')
+            ->orderByDesc('id')
             ->get();
 
         if ($placements->isEmpty()) {
@@ -121,10 +123,12 @@ class ReportService
             }
         }
 
-        $hafalanBySantri = $hafalanQuery->get()->groupBy('santri_id');
+        $hafalanByPlacement = $hafalanQuery->get()->groupBy(function (Hafalan $hafalan) {
+            return $this->placementKey($hafalan->santri_id, $hafalan->kelas_id);
+        });
 
-        return $placements->map(function (SantriKelas $placement) use ($hafalanBySantri) {
-            $latestHafalan = $hafalanBySantri->get($placement->santri_id)?->first();
+        return $placements->map(function (SantriKelas $placement) use ($hafalanByPlacement) {
+            $latestHafalan = $hafalanByPlacement->get($this->placementKey($placement->santri_id, $placement->kelas_id))?->first();
 
             $range = '-';
             if ($latestHafalan) {
@@ -141,12 +145,17 @@ class ReportService
 
             return [
                 'santri_id' => $placement->santri_id,
+                'placement_id' => $placement->id,
                 'nis' => $placement->santri?->nis,
                 'nama' => $placement->santri?->nama,
                 'kelas_id' => $placement->kelas_id,
                 'kelas_nama' => $placement->kelas?->nama,
                 'tahun_ajaran_id' => $placement->tahun_ajaran_id,
                 'tahun_ajaran_nama' => $placement->tahunAjaran?->nama,
+                'status_penempatan' => $placement->status,
+                'tanggal_masuk' => $placement->tanggal_masuk?->format('Y-m-d'),
+                'tanggal_keluar' => $placement->tanggal_keluar?->format('Y-m-d'),
+                'periode_penempatan' => $this->formatPeriodePenempatan($placement),
                 'hafalan_terakhir' => $range,
                 'tanggal_hafalan_terakhir' => $latestHafalan?->tanggal_setor?->format('Y-m-d'),
                 'nilai_hafalan_terakhir' => $latestHafalan?->nilai ?? '-',
@@ -254,6 +263,8 @@ class ReportService
 
         $placement = $placementQuery
             ->orderByDesc('tahun_ajaran_id')
+            ->orderByDesc('tanggal_masuk')
+            ->orderByDesc('id')
             ->first();
 
         if (!$placement) {
@@ -316,5 +327,18 @@ class ReportService
             ...$printData,
             'ujian_nilais' => $ujianNilais,
         ];
+    }
+
+    private function placementKey(int $santriId, int $kelasId): string
+    {
+        return $santriId . ':' . $kelasId;
+    }
+
+    private function formatPeriodePenempatan(SantriKelas $placement): string
+    {
+        $masuk = $placement->tanggal_masuk?->format('Y-m-d') ?? '-';
+        $keluar = $placement->tanggal_keluar?->format('Y-m-d') ?? 'sekarang';
+
+        return $masuk . ' - ' . $keluar;
     }
 }

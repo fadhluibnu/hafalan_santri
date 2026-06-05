@@ -7,8 +7,8 @@ use App\Models\OrangTua;
 use App\Models\KesehatanSantri;
 use App\Models\AdminCabang;
 use App\Models\Kelas;
-use App\Models\SantriKelas;
 use App\Models\TahunAjaran;
+use App\Services\SantriPlacementService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -20,9 +20,12 @@ class SantriImport implements ToCollection, WithHeadingRow, WithValidation
 {
     protected $pondokId;
     protected $activeTahunAjaranId;
+    protected SantriPlacementService $placements;
 
     public function __construct()
     {
+        $this->placements = app(SantriPlacementService::class);
+
         $adminCabang = AdminCabang::where('user_id', Auth::id())->first();
         $this->pondokId = $adminCabang ? $adminCabang->pondok_id : null;
         
@@ -119,26 +122,7 @@ class SantriImport implements ToCollection, WithHeadingRow, WithValidation
                         ->first();
 
                     if ($kelas) {
-                        // Cek apakah sudah ada penempatan di tahun ajaran ini
-                        $existingPlacement = SantriKelas::where('santri_id', $santri->id)
-                            ->where('tahun_ajaran_id', $this->activeTahunAjaranId)
-                            ->first();
-
-                        if ($existingPlacement) {
-                            // Update kelas jika berbeda
-                            if ($existingPlacement->kelas_id !== $kelas->id) {
-                                $existingPlacement->update(['kelas_id' => $kelas->id]);
-                            }
-                        } else {
-                            // Buat penempatan baru
-                            SantriKelas::create([
-                                'santri_id' => $santri->id,
-                                'kelas_id' => $kelas->id,
-                                'tahun_ajaran_id' => $this->activeTahunAjaranId,
-                                'tanggal_masuk' => now(),
-                                'status' => 'aktif',
-                            ]);
-                        }
+                        $this->placements->assignToClass($santri, $kelas);
                     }
                 }
 

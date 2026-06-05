@@ -17,9 +17,15 @@ use App\Imports\SantriImport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\SantriKelas;
 use App\Models\TahunAjaran;
+use App\Models\Kelas;
+use App\Services\SantriPlacementService;
 
 class SantriController extends Controller
 {
+    public function __construct(private readonly SantriPlacementService $placements)
+    {
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -179,7 +185,7 @@ class SantriController extends Controller
             $santri = Santri::create([
                 'nis' => $nis,
                 'pondok_id' => $adminCabang->pondok_id,
-                'kelas_id' => $request->kelas_id,
+                'kelas_id' => null,
                 'nama' => $request->nama,
                 'panggilan' => $request->panggilan,
                 'jenis_kelamin' => $request->jenis_kelamin,
@@ -204,6 +210,15 @@ class SantriController extends Controller
             ]);
             if (!$santri) {
                 throw new \Exception('Gagal membuat data santri.');
+            }
+
+            if ($request->filled('kelas_id')) {
+                $kelas = Kelas::query()->findOrFail($request->kelas_id);
+                if ((int) $kelas->pondok_id !== (int) $adminCabang->pondok_id) {
+                    throw new \Exception('Kelas tidak ditemukan di pondok Anda.');
+                }
+
+                $this->placements->assignToClass($santri, $kelas);
             }
 
             // Simpan data orang tua Ayah
@@ -533,7 +548,6 @@ class SantriController extends Controller
 
             // Update data santri
             $santri->update([
-                'kelas_id' => $request->kelas_id,
                 'nama' => $request->nama,
                 'panggilan' => $request->panggilan,
                 'jenis_kelamin' => $request->jenis_kelamin,
@@ -556,6 +570,15 @@ class SantriController extends Controller
                 'hobi' => $request->hobi,
                 'foto' => $fotoPath ?? '',
             ]);
+
+            if ($request->filled('kelas_id')) {
+                $kelas = Kelas::query()->findOrFail($request->kelas_id);
+                if ((int) $kelas->pondok_id !== (int) $santri->pondok_id) {
+                    throw new \Exception('Kelas tidak ditemukan di pondok santri.');
+                }
+
+                $this->placements->assignToClass($santri, $kelas);
+            }
 
             // Update atau create data orang tua Ayah
             $ayah = $santri->orangTuas->where('tipe', 'Ayah')->first();

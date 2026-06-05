@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import FormInput from '../../SuperAdmin/components/FormInput';
 
 // This form aligns with App\Models\Hafalan::$fillable
-const HafalanForm = ({ formData, setFormData, onSubmit, processing, classes = [], santrisByClass = {}, ustadzs = [], surahs = [] }) => {
+const HafalanForm = ({ formData, setFormData, onSubmit, processing, classes = [], santrisByClass = {}, ustadzs = [], surahs = [], nilaiOptions = [] }) => {
 	const kelasOptions = classes.map((c) => ({ value: c.id, label: c.nama }));
 	const ustadzOptions = ustadzs.map((g) => ({ value: g.id, label: g.nama }));
 	const surahOptions = surahs.map((s) => ({ value: s.id, label: s.name }));
@@ -50,14 +50,15 @@ const HafalanForm = ({ formData, setFormData, onSubmit, processing, classes = []
 		{ value: 'murojaah', label: 'Murojaah' },
 		{ value: 'semaan', label: 'Sema’an' },
 	];
-	const nilaiOptions = [
-		{ value: 'baik', label: 'Baik' },
-		{ value: 'cukup', label: 'Cukup' },
-		{ value: 'kurang', label: 'Kurang' },
-	];
+	const hasNilaiOptions = nilaiOptions.length > 0;
 
 	return (
 		<form onSubmit={onSubmit} className="space-y-4">
+			{!hasNilaiOptions && (
+				<div className="rounded-md border border-yellow-300 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
+					Skema penilaian aktif belum tersedia.
+				</div>
+			)}
 			<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 				<FormInput
 					type="select"
@@ -159,6 +160,7 @@ const HafalanForm = ({ formData, setFormData, onSubmit, processing, classes = []
 					onChange={(e) => set('nilai', e.target.value)}
 					options={nilaiOptions}
 					required
+					disabled={!hasNilaiOptions}
 				/>
 			</div>
 			<FormInput
@@ -172,7 +174,7 @@ const HafalanForm = ({ formData, setFormData, onSubmit, processing, classes = []
 			<div className="flex items-center justify-end space-x-2">
 				<button
 					type="submit"
-					disabled={processing}
+					disabled={processing || !hasNilaiOptions}
 					className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
 				>
 					{processing ? 'Menyimpan...' : 'Simpan'}
@@ -183,4 +185,3 @@ const HafalanForm = ({ formData, setFormData, onSubmit, processing, classes = []
 };
 
 export default HafalanForm;
-

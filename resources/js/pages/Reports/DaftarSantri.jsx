@@ -15,6 +15,15 @@ function cleanParams(filters) {
     return params;
 }
 
+function formatStatus(status) {
+    if (status === 'aktif') return 'Aktif';
+    if (status === 'pindah') return 'Pindah';
+    if (status === 'naik_kelas') return 'Naik kelas';
+    if (status === 'lulus') return 'Lulus';
+    if (status === 'keluar') return 'Keluar';
+    return status || '-';
+}
+
 export default function DaftarSantriPage(props) {
     const {
         authRole,
@@ -71,13 +80,15 @@ export default function DaftarSantriPage(props) {
                 {canLoadData && (
                     <div className="rounded-lg border bg-white p-4">
                         <div className="overflow-x-auto">
-                            <table className="w-full min-w-[860px]">
+                            <table className="w-full min-w-[1040px]">
                                 <thead className="border-b bg-gray-50 text-left text-sm text-gray-600">
                                     <tr>
                                         <th className="px-3 py-2">NIS</th>
                                         <th className="px-3 py-2">Nama</th>
                                         <th className="px-3 py-2">Kelas</th>
                                         <th className="px-3 py-2">Tahun Ajaran</th>
+                                        <th className="px-3 py-2">Status</th>
+                                        <th className="px-3 py-2">Periode</th>
                                         <th className="px-3 py-2">Hafalan Terakhir</th>
                                         <th className="px-3 py-2">Tanggal</th>
                                         <th className="px-3 py-2">Nilai</th>
@@ -86,17 +97,19 @@ export default function DaftarSantriPage(props) {
                                 <tbody className="text-sm">
                                     {rows.length === 0 && (
                                         <tr>
-                                            <td className="px-3 py-4 text-center text-gray-500" colSpan={7}>
+                                            <td className="px-3 py-4 text-center text-gray-500" colSpan={9}>
                                                 Tidak ada data santri untuk filter ini.
                                             </td>
                                         </tr>
                                     )}
                                     {rows.map((row) => (
-                                        <tr key={`${row.santri_id}-${row.kelas_id}-${row.tahun_ajaran_id}`} className="border-b">
+                                        <tr key={row.placement_id || `${row.santri_id}-${row.kelas_id}-${row.tahun_ajaran_id}`} className="border-b">
                                             <td className="px-3 py-2">{row.nis || '-'}</td>
                                             <td className="px-3 py-2">{row.nama}</td>
                                             <td className="px-3 py-2">{row.kelas_nama || '-'}</td>
                                             <td className="px-3 py-2">{row.tahun_ajaran_nama || '-'}</td>
+                                            <td className="px-3 py-2">{formatStatus(row.status_penempatan)}</td>
+                                            <td className="px-3 py-2">{row.periode_penempatan || '-'}</td>
                                             <td className="px-3 py-2">{row.hafalan_terakhir || '-'}</td>
                                             <td className="px-3 py-2">{row.tanggal_hafalan_terakhir || '-'}</td>
                                             <td className="px-3 py-2">{row.nilai_hafalan_terakhir || '-'}</td>

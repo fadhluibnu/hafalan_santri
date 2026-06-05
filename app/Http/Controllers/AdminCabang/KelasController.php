@@ -13,9 +13,14 @@ use App\Models\Ustadz;
 use App\Models\TahunAjaran;
 use App\Models\Santri;
 use App\Models\SantriKelas;
+use App\Services\SantriPlacementService;
 
 class KelasController extends Controller
 {
+    public function __construct(private readonly SantriPlacementService $placements)
+    {
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -280,7 +285,11 @@ class KelasController extends Controller
     {
         DB::beginTransaction();
         try {
-            $kelas = Kelas::withCount('santris')->findOrFail($id);
+            $kelas = Kelas::withCount([
+                'santriKelas as active_santri_count' => function ($q) {
+                    $q->where('status', 'aktif');
+                },
+            ])->findOrFail($id);
 
             // Pastikan admin cabang memiliki pondok yang sama
             $adminCabang = AdminCabang::where('user_id', Auth::id())->first();
@@ -292,7 +301,7 @@ class KelasController extends Controller
             }
 
             // Cek dependensi: jika ada santri di kelas, tolak penghapusan
-            if (($kelas->santris_count ?? 0) > 0) {
+            if (($kelas->active_santri_count ?? 0) > 0) {
                 return redirect()->back()->withErrors(['error' => 'Kelas memiliki santri. Pindahkan atau hapus santri terlebih dahulu sebelum menghapus kelas.']);
             }
 
@@ -430,36 +439,7 @@ class KelasController extends Controller
                 }
             }
 
-            // Hapus penempatan santri yang sebelumnya di kelas ini tapi tidak ada di incoming
-            SantriKelas::where('kelas_id', $kelas->id)
-                ->where('tahun_ajaran_id', $tahunAjaranId)
-                ->whereNotIn('santri_id', $incoming)
-                ->delete();
-
-            // Tambahkan santri baru ke kelas ini
-            foreach ($incoming as $santriId) {
-                // Cek apakah santri sudah ada di kelas ini
-                $existing = SantriKelas::where('santri_id', $santriId)
-                    ->where('kelas_id', $kelas->id)
-                    ->where('tahun_ajaran_id', $tahunAjaranId)
-                    ->first();
-
-                if (!$existing) {
-                    // Hapus penempatan lama di kelas lain (jika ada) untuk tahun ajaran ini
-                    SantriKelas::where('santri_id', $santriId)
-                        ->where('tahun_ajaran_id', $tahunAjaranId)
-                        ->delete();
-
-                    // Buat penempatan baru
-                    SantriKelas::create([
-                        'santri_id' => $santriId,
-                        'kelas_id' => $kelas->id,
-                        'tahun_ajaran_id' => $tahunAjaranId,
-                        'tanggal_masuk' => now(),
-                        'status' => 'aktif',
-                    ]);
-                }
-            }
+            $this->placements->syncClassRoster($kelas, $incoming);
 
             DB::commit();
             return redirect()->route('admin-cabang.struktur.kelas.show', $kelas->id)->with('success', 'Penempatan santri berhasil disimpan.');

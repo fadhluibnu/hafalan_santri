@@ -74,6 +74,9 @@ class SantriKelas extends Model
         return self::where('santri_id', $santriId)
             ->where('status', 'aktif')
             ->with(['kelas', 'tahunAjaran'])
+            ->orderByDesc('tahun_ajaran_id')
+            ->orderByDesc('tanggal_masuk')
+            ->orderByDesc('id')
             ->first();
     }
 }

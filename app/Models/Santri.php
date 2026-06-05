@@ -125,7 +125,13 @@ class Santri extends Model
      */
     public function kelasAktif()
     {
-        return $this->santriKelas()->where('status', 'aktif')->with('kelas')->first();
+        return $this->santriKelas()
+            ->where('status', 'aktif')
+            ->with('kelas')
+            ->orderByDesc('tahun_ajaran_id')
+            ->orderByDesc('tanggal_masuk')
+            ->orderByDesc('id')
+            ->first();
     }
 
     /**

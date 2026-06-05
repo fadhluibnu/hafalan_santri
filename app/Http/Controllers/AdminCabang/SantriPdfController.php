@@ -51,7 +51,7 @@ class SantriPdfController extends Controller
         $kelasNama = $kelasAktif ? $kelasAktif->kelas?->nama : '-';
 
         // Get hafalan/setoran data
-        $hafalans = Hafalan::with(['dariSurah', 'sampaiSurah', 'ustadz'])
+        $hafalans = Hafalan::with(['dariSurah', 'sampaiSurah', 'ustadz', 'kelas:id,nama'])
             ->where('santri_id', $santri->id)
             ->orderBy('tanggal_setor', 'desc')
             ->limit(20)

@@ -14,6 +14,7 @@ use App\Models\Santri;
 use App\Models\Hafalan;
 use App\Models\QuranSurah;
 use App\Models\SantriKelas;
+use App\Models\SkemaPenilaian;
 use App\Models\TahunAjaran;
 
 class HafalanController extends Controller
@@ -127,6 +128,7 @@ class HafalanController extends Controller
             'ustadzs' => $ustadzs,
             'surahs' => $surahs,
             'currentUstadzId' => $ustadz->id ?? null,
+            'nilaiOptions' => $this->nilaiOptionsForPondok($pondokId),
         ]);
     }
 
@@ -149,7 +151,7 @@ class HafalanController extends Controller
                 'sampai_surat' => 'required|integer|exists:quran_surahs,id',
                 'sampai_ayat' => 'required|integer|min:1',
                 'kategori' => 'required|string|max:100',
-                'nilai' => 'required|string|max:5',
+                'nilai' => 'required|string|max:20',
                 'catatan' => 'nullable|string',
             ]);
 
@@ -195,6 +197,8 @@ class HafalanController extends Controller
                 throw new \Exception('Santri tidak terdaftar di kelas yang dipilih.');
             }
 
+            $nilai = $this->normalizeNilaiForPondok($pondokId, $validated['nilai']);
+
             // Simpan hafalan
             Hafalan::create([
                 'santri_id' => $santri->id,
@@ -207,7 +211,7 @@ class HafalanController extends Controller
                 'sampai_surat' => $validated['sampai_surat'],
                 'sampai_ayat' => $validated['sampai_ayat'],
                 'kategori' => $validated['kategori'],
-                'nilai' => $validated['nilai'],
+                'nilai' => $nilai,
                 'catatan' => $validated['catatan'] ?? null,
             ]);
 
@@ -322,6 +326,7 @@ class HafalanController extends Controller
             'santrisByClass' => $santrisByClass,
             'ustadzs' => $ustadzs,
             'surahs' => $surahs,
+            'nilaiOptions' => $this->nilaiOptionsForPondok($pondokId),
         ]);
     }
 
@@ -345,7 +350,7 @@ class HafalanController extends Controller
                 'sampai_surat' => 'required|integer|exists:quran_surahs,id',
                 'sampai_ayat' => 'required|integer|min:1',
                 'kategori' => 'required|string|max:100',
-                'nilai' => 'required|string|max:5',
+                'nilai' => 'required|string|max:20',
                 'catatan' => 'nullable|string',
             ]);
 
@@ -381,6 +386,8 @@ class HafalanController extends Controller
                 throw new \Exception('Santri tidak terdaftar di kelas yang dipilih.');
             }
 
+            $nilai = $this->normalizeNilaiForPondok($pondokId, $validated['nilai']);
+
             $hafalan->update([
                 'kelas_id' => $validated['kelas_id'],
                 'santri_id' => $validated['santri_id'],
@@ -392,7 +399,7 @@ class HafalanController extends Controller
                 'sampai_surat' => $validated['sampai_surat'],
                 'sampai_ayat' => $validated['sampai_ayat'],
                 'kategori' => $validated['kategori'],
-                'nilai' => $validated['nilai'],
+                'nilai' => $nilai,
                 'catatan' => $validated['catatan'] ?? null,
             ]);
 
@@ -429,5 +436,50 @@ class HafalanController extends Controller
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Gagal menghapus setoran: ' . $e->getMessage()]);
         }
+    }
+
+    private function nilaiOptionsForPondok(?int $pondokId): array
+    {
+        if (!$pondokId) {
+            return [];
+        }
+
+        $skema = SkemaPenilaian::activeForPondok($pondokId);
+        $snapshot = $skema ? $skema->toSnapshot() : [];
+        $items = $snapshot['items'] ?? [];
+
+        return collect($items)
+            ->map(function (array $item) {
+                $singkatan = strtoupper(trim((string) ($item['singkatan'] ?? '')));
+                $nama = trim((string) ($item['nama'] ?? ''));
+
+                if ($singkatan === '') {
+                    return null;
+                }
+
+                return [
+                    'value' => $singkatan,
+                    'label' => $nama !== '' ? "{$singkatan} - {$nama}" : $singkatan,
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    private function normalizeNilaiForPondok(?int $pondokId, mixed $nilaiInput): string
+    {
+        $nilai = strtoupper(trim((string) $nilaiInput));
+        $allowed = collect($this->nilaiOptionsForPondok($pondokId))->pluck('value');
+
+        if ($allowed->isEmpty()) {
+            throw new \Exception('Skema penilaian aktif untuk pondok ini belum diatur.');
+        }
+
+        if (!$allowed->contains($nilai)) {
+            throw new \Exception('Nilai tidak ada di skema penilaian pondok.');
+        }
+
+        return $nilai;
     }
 }

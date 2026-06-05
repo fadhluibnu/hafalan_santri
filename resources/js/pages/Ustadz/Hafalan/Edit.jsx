@@ -3,7 +3,7 @@ import { route } from 'ziggy-js';
 import HafalanForm from '../components/HafalanForm';
 import Layout from '../components/Layout';
 
-const HafalanEdit = ({ hafalan, classes, santrisByClass, ustadzs, surahs }) => {
+const HafalanEdit = ({ hafalan, classes, santrisByClass, ustadzs, surahs, nilaiOptions = [] }) => {
     const { data, setData, put, processing, errors } = useForm({
         kelas_id: hafalan?.kelas_id || '',
         santri_id: hafalan?.santri_id || '',
@@ -55,6 +55,7 @@ const HafalanEdit = ({ hafalan, classes, santrisByClass, ustadzs, surahs }) => {
                         santrisByClass={santrisByClass || {}}
                         ustadzs={ustadzs || []}
                         surahs={surahs || []}
+                        nilaiOptions={nilaiOptions}
                     />
                 </div>
             </div>
