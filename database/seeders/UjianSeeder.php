@@ -39,7 +39,6 @@ class UjianSeeder extends Seeder
 
             foreach ($kelasList as $kelas) {
                 $santriKelasList = SantriKelas::where('kelas_id', $kelas->id)
-                    ->where('status', 'aktif')
                     ->where('tahun_ajaran_id', $kelas->tahun_ajaran_id)
                     ->get();
 
@@ -47,36 +46,47 @@ class UjianSeeder extends Seeder
 
                 $ustadz = $ustadzs->first();
 
-                $ujian = Ujian::create([
-                    'pondok_id' => $pondok->id,
-                    'tahun_ajaran_id' => $kelas->tahun_ajaran_id,
-                    'kelas_id' => $kelas->id,
-                    'ustadz_id' => $ustadz->id,
-                    'skema_penilaian_id' => $skema->id,
-                    'nama' => 'Ujian Hafalan Juz 30',
-                    'tanggal_ujian' => now()->subDays(2)->format('Y-m-d'),
-                    'skema_snapshot' => $snapshot,
-                    'status' => 'selesai',
-                    'keterangan' => 'Ujian terstruktur statis untuk keperluan seeder',
-                ]);
+                $ta = $kelas->tahunAjaran;
+                $midDate = $ta ? \Carbon\Carbon::parse($ta->tanggal_mulai)->addMonths(3)->format('Y-m-d') : now()->subDays(30)->format('Y-m-d');
+                $endDate = $ta ? \Carbon\Carbon::parse($ta->tanggal_selesai)->subDays(10)->format('Y-m-d') : now()->subDays(2)->format('Y-m-d');
 
-                foreach ($santriKelasList as $index => $santriKelas) {
-                    $nilaiAngka = null;
-                    $nilaiLabel = null;
+                $ujianTypes = [
+                    ['nama' => 'Ujian Tengah Semester (UTS)', 'tanggal' => $midDate],
+                    ['nama' => 'Ujian Akhir Semester (UAS)', 'tanggal' => $endDate],
+                ];
 
-                    if ($isNumeric) {
-                        $nilaiAngka = 80 + ($index % 20); // Nilai berkisar 80-99
-                    } else {
-                        $nilaiLabel = $labelItems[$index % count($labelItems)];
-                    }
-
-                    UjianNilai::create([
-                        'ujian_id' => $ujian->id,
-                        'santri_id' => $santriKelas->santri_id,
-                        'nilai_angka' => $nilaiAngka,
-                        'nilai_label' => $nilaiLabel,
-                        'catatan' => 'Baik',
+                foreach ($ujianTypes as $tipe) {
+                    $ujian = Ujian::create([
+                        'pondok_id' => $pondok->id,
+                        'tahun_ajaran_id' => $kelas->tahun_ajaran_id,
+                        'kelas_id' => $kelas->id,
+                        'ustadz_id' => $ustadz->id,
+                        'skema_penilaian_id' => $skema->id,
+                        'nama' => $tipe['nama'],
+                        'tanggal_ujian' => $tipe['tanggal'],
+                        'skema_snapshot' => $snapshot,
+                        'status' => 'selesai',
+                        'keterangan' => 'Ujian terstruktur statis untuk keperluan seeder',
                     ]);
+
+                    foreach ($santriKelasList as $index => $santriKelas) {
+                        $nilaiAngka = null;
+                        $nilaiLabel = null;
+
+                        if ($isNumeric) {
+                            $nilaiAngka = 80 + (($index + strlen($tipe['nama'])) % 20); // Nilai bervariasi
+                        } else {
+                            $nilaiLabel = $labelItems[($index + strlen($tipe['nama'])) % count($labelItems)];
+                        }
+
+                        UjianNilai::create([
+                            'ujian_id' => $ujian->id,
+                            'santri_id' => $santriKelas->santri_id,
+                            'nilai_angka' => $nilaiAngka,
+                            'nilai_label' => $nilaiLabel,
+                            'catatan' => 'Baik',
+                        ]);
+                    }
                 }
             }
         }

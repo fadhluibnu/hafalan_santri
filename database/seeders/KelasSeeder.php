@@ -29,29 +29,27 @@ class KelasSeeder extends Seeder
         ];
 
         foreach ($pondoks as $pondok) {
-            // Get active tahun ajaran
-            $tahunAjaranAktif = TahunAjaran::where('pondok_id', $pondok->id)
-                ->where('is_active', true)
-                ->first();
-
-            if (!$tahunAjaranAktif) continue;
+            // Get all tahun ajaran for this pondok
+            $tahunAjarans = TahunAjaran::where('pondok_id', $pondok->id)->get();
 
             // Get ustadzs for wali kelas
             $ustadzs = Ustadz::where('pondok_id', $pondok->id)->get();
 
-            foreach ($kelasData as $index => $data) {
-                $waliKelas = $ustadzs->count() > 0 ? $ustadzs[$index % $ustadzs->count()] : null;
+            foreach ($tahunAjarans as $tahunAjaran) {
+                foreach ($kelasData as $index => $data) {
+                    $waliKelas = $ustadzs->count() > 0 ? $ustadzs[$index % $ustadzs->count()] : null;
 
-                Kelas::create([
-                    'pondok_id' => $pondok->id,
-                    'tahun_ajaran_id' => $tahunAjaranAktif->id,
-                    'nama' => $data['nama'],
-                    'tingkat' => $data['tingkat'],
-                    'kapasitas' => $data['kapasitas'],
-                    'wali_kelas_id' => $waliKelas?->id,
-                    'keterangan' => "Kelas {$data['tingkat']} tahun ajaran {$tahunAjaranAktif->nama}",
-                    'status' => true,
-                ]);
+                    Kelas::create([
+                        'pondok_id' => $pondok->id,
+                        'tahun_ajaran_id' => $tahunAjaran->id,
+                        'nama' => $data['nama'],
+                        'tingkat' => $data['tingkat'],
+                        'kapasitas' => $data['kapasitas'],
+                        'wali_kelas_id' => $waliKelas?->id,
+                        'keterangan' => "Kelas {$data['tingkat']} tahun ajaran {$tahunAjaran->nama} ({$tahunAjaran->semester})",
+                        'status' => true,
+                    ]);
+                }
             }
         }
 

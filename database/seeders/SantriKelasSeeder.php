@@ -22,27 +22,13 @@ class SantriKelasSeeder extends Seeder
         foreach ($pondoks as $pondok) {
             echo "Processing pondok: {$pondok->nama} (ID: {$pondok->id})\n";
 
-            // Get active tahun ajaran
-            $tahunAjaranAktif = TahunAjaran::where('pondok_id', $pondok->id)
-                ->where('is_active', true)
-                ->first();
+            // Get all tahun ajaran for this pondok
+            $tahunAjarans = TahunAjaran::where('pondok_id', $pondok->id)->get();
 
-            if (!$tahunAjaranAktif) {
-                echo "  - No active tahun ajaran found, skipping...\n";
+            if ($tahunAjarans->isEmpty()) {
+                echo "  - No tahun ajaran found, skipping...\n";
                 continue;
             }
-            echo "  - Tahun Ajaran Aktif: {$tahunAjaranAktif->nama} (ID: {$tahunAjaranAktif->id})\n";
-
-            // Get all kelas for this tahun ajaran
-            $kelasList = Kelas::where('pondok_id', $pondok->id)
-                ->where('tahun_ajaran_id', $tahunAjaranAktif->id)
-                ->get();
-
-            if ($kelasList->isEmpty()) {
-                echo "  - No kelas found for this tahun ajaran, skipping...\n";
-                continue;
-            }
-            echo "  - Found {$kelasList->count()} kelas\n";
 
             // Get all santri for this pondok
             $santris = Santri::where('pondok_id', $pondok->id)
@@ -61,46 +47,56 @@ class SantriKelasSeeder extends Seeder
             $placeCount = (int)($santriCount * 0.8);
             $santriToPlace = $santris->take($placeCount);
             
-            echo "  - Will place {$placeCount} santri (80% of {$santriCount})\n";
-            
-            $kelasIndex = 0;
-            $countPerKelas = [];
-            $placedInThisPondok = 0;
+            echo "  - Will place {$placeCount} santri (80% of {$santriCount}) across {$tahunAjarans->count()} semesters\n";
 
-            foreach ($santriToPlace as $santri) {
-                $kelas = $kelasList[$kelasIndex];
-                
-                // Track count per kelas to respect kapasitas
-                if (!isset($countPerKelas[$kelas->id])) {
-                    $countPerKelas[$kelas->id] = 0;
+            foreach ($tahunAjarans as $ta) {
+                echo "    > Placing for {$ta->nama} ({$ta->semester})\n";
+                // Get all kelas for this tahun ajaran
+                $kelasList = Kelas::where('pondok_id', $pondok->id)
+                    ->where('tahun_ajaran_id', $ta->id)
+                    ->get();
+
+                if ($kelasList->isEmpty()) {
+                    continue;
                 }
+                
+                $kelasIndex = 0;
+                $countPerKelas = [];
+                $placedInThisPondok = 0;
 
-                // If kelas is full, move to next kelas
-                if ($countPerKelas[$kelas->id] >= $kelas->kapasitas) {
-                    $kelasIndex = ($kelasIndex + 1) % $kelasList->count();
+                foreach ($santriToPlace as $santri) {
                     $kelas = $kelasList[$kelasIndex];
+                    
+                    // Track count per kelas to respect kapasitas
                     if (!isset($countPerKelas[$kelas->id])) {
                         $countPerKelas[$kelas->id] = 0;
                     }
+
+                    // If kelas is full, move to next kelas
+                    if ($countPerKelas[$kelas->id] >= $kelas->kapasitas) {
+                        $kelasIndex = ($kelasIndex + 1) % $kelasList->count();
+                        $kelas = $kelasList[$kelasIndex];
+                        if (!isset($countPerKelas[$kelas->id])) {
+                            $countPerKelas[$kelas->id] = 0;
+                        }
+                    }
+
+                    SantriKelas::create([
+                        'santri_id' => $santri->id,
+                        'kelas_id' => $kelas->id,
+                        'tahun_ajaran_id' => $ta->id,
+                        'tanggal_masuk' => $ta->tanggal_mulai,
+                        'tanggal_keluar' => $ta->status === 'selesai' ? $ta->tanggal_selesai : null,
+                        'status' => $ta->status === 'selesai' ? 'lulus' : 'aktif',
+                        'keterangan' => null,
+                    ]);
+
+                    $countPerKelas[$kelas->id]++;
+                    $placedInThisPondok++;
+                    $kelasIndex = ($kelasIndex + 1) % $kelasList->count();
                 }
-
-                SantriKelas::create([
-                    'santri_id' => $santri->id,
-                    'kelas_id' => $kelas->id,
-                    'tahun_ajaran_id' => $tahunAjaranAktif->id,
-                    'tanggal_masuk' => $tahunAjaranAktif->tanggal_mulai,
-                    'tanggal_keluar' => null,
-                    'status' => 'aktif',
-                    'keterangan' => null,
-                ]);
-
-                $countPerKelas[$kelas->id]++;
-                $placedInThisPondok++;
-                $kelasIndex = ($kelasIndex + 1) % $kelasList->count();
+                $totalPlaced += $placedInThisPondok;
             }
-
-            echo "  - Placed {$placedInThisPondok} santri successfully\n";
-            $totalPlaced += $placedInThisPondok;
         }
 
         echo "\n✅ Seeder SantriKelas selesai. Total {$totalPlaced} santri ditempatkan ke kelas.\n";

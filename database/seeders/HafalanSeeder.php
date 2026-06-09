@@ -49,39 +49,55 @@ class HafalanSeeder extends Seeder
             }
 
             foreach ($santris as $santri) {
-                $santriKelas = SantriKelas::where('santri_id', $santri->id)->where('status', 'aktif')->first();
-                if (!$santriKelas) continue;
-                
-                $kelas = Kelas::find($santriKelas->kelas_id);
-                if (!$kelas) continue;
+                // Get ALL placements for this santri
+                $placements = SantriKelas::where('santri_id', $santri->id)->with('tahunAjaran')->get();
+                if ($placements->isEmpty()) continue;
                 
                 $ustadz = $ustadzs->first();
                 
-                // Setoran berurutan
-                foreach ($surahProgress as $index => $surah) {
-                    $hariMundur = (5 - $index) * 3; // 15, 12, 9, 6, 3 hari yang lalu
-                    $tanggal = now()->subDays($hariMundur)->format('Y-m-d');
+                foreach ($placements as $placement) {
+                    $kelas = Kelas::find($placement->kelas_id);
+                    if (!$kelas) continue;
+
+                    $ta = $placement->tahunAjaran;
+                    if (!$ta || !$ta->tanggal_mulai || !$ta->tanggal_selesai) continue;
+
+                    $start = \Carbon\Carbon::parse($ta->tanggal_mulai)->startOfMonth();
+                    $end = \Carbon\Carbon::parse($ta->tanggal_selesai)->endOfMonth();
+
+                    $currentMonth = $start->copy();
                     
-                    // Jika numeric, berikan nilai 85, 87, 89, 91, 93
-                    // Jika label, berikan label secara rotasi, umumnya A atau B
-                    $nilai = $isNumeric 
-                        ? (85 + ($index * 2)) 
-                        : $labelItems[$index % count($labelItems)];
-                    
-                    Hafalan::create([
-                        'santri_id' => $santri->id,
-                        'ustadz_id' => $ustadz->id,
-                        'kelas_id' => $kelas->id,
-                        'tanggal_setor' => $tanggal,
-                        'juz' => 30,
-                        'dari_surat' => $surah->id,
-                        'dari_ayat' => 1,
-                        'sampai_surat' => $surah->id,
-                        'sampai_ayat' => $surah->jumlah_ayat ?? 10,
-                        'kategori' => 'Ziyadah',
-                        'nilai' => $nilai,
-                        'catatan' => 'Lancar dan baik',
-                    ]);
+                    // Generate 2 hafalans per month in the semester
+                    while ($currentMonth <= $end) {
+                        for ($i = 0; $i < 2; $i++) {
+                            // Random day in the month
+                            $randomDay = rand(1, $currentMonth->daysInMonth);
+                            $tanggal = $currentMonth->copy()->addDays($randomDay - 1)->format('Y-m-d');
+
+                            // Random surah from the progress
+                            $surah = $surahProgress->random();
+                            
+                            $nilai = $isNumeric 
+                                ? rand(80, 95)
+                                : $labelItems[array_rand($labelItems)];
+                            
+                            Hafalan::create([
+                                'santri_id' => $santri->id,
+                                'ustadz_id' => $ustadz->id,
+                                'kelas_id' => $kelas->id,
+                                'tanggal_setor' => $tanggal,
+                                'juz' => 30,
+                                'dari_surat' => $surah->id,
+                                'dari_ayat' => 1,
+                                'sampai_surat' => $surah->id,
+                                'sampai_ayat' => $surah->jumlah_ayat ?? 10,
+                                'kategori' => 'Ziyadah',
+                                'nilai' => $nilai,
+                                'catatan' => 'Lancar dan baik',
+                            ]);
+                        }
+                        $currentMonth->addMonth();
+                    }
                 }
             }
         }

@@ -280,10 +280,37 @@ class ReportService
             });
         }
 
+        $allHafalans = $hafalanQuery->get();
+        $filteredHafalans = $allHafalans;
+
+        $tahunAjaran = $placement->tahunAjaran;
+        if ($tahunAjaran && $tahunAjaran->tanggal_mulai && $tahunAjaran->tanggal_selesai) {
+            $grouped = $allHafalans->groupBy(function ($h) {
+                return $h->tanggal_setor ? \Carbon\Carbon::parse($h->tanggal_setor)->format('Y-m') : 'unknown';
+            });
+
+            $start = \Carbon\Carbon::parse($tahunAjaran->tanggal_mulai)->startOfMonth();
+            $end = \Carbon\Carbon::parse($tahunAjaran->tanggal_selesai)->endOfMonth();
+
+            $monthlyFiltered = collect();
+            $current = $start->copy();
+            while ($current <= $end) {
+                $monthKey = $current->format('Y-m');
+                if ($grouped->has($monthKey)) {
+                    // Ambil 2 teratas (karena sudah ordered by desc, ini berarti 2 setoran terakhir)
+                    $monthlyFiltered = $monthlyFiltered->concat($grouped->get($monthKey)->take(2));
+                }
+                $current->addMonth();
+            }
+            
+            // Urutkan kembali berdasarkan tanggal_setor desc (terbaru di atas)
+            $filteredHafalans = $monthlyFiltered->sortByDesc('tanggal_setor')->values();
+        }
+
         return [
             'santri' => $santri,
             'placement' => $placement,
-            'hafalans' => $hafalanQuery->get(),
+            'hafalans' => $filteredHafalans,
         ];
     }
 
