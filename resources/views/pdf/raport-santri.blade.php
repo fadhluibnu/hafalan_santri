@@ -114,5 +114,10 @@
         </tbody>
     </table>
 
+    @if(!empty($keterangan))
+        <div class="section-title" style="margin-top: 15px;">Keterangan Tambahan</div>
+        <p style="font-size: 11px; color: #444; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: #f9fafb; white-space: pre-wrap;">{{ $keterangan }}</p>
+    @endif
+
     <p class="muted">Dicetak pada {{ now()->format('Y-m-d H:i:s') }}.</p>
 @endsection

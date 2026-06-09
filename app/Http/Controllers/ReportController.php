@@ -251,6 +251,36 @@ class ReportController extends Controller
             'kelasOptions' => $kelasOptions,
         ]);
     }
+    public function raportPreview(Request $request, string $nis)
+    {
+        $scope = $this->resolvePondokScope($request);
+        $pondokId = $scope['pondok_id'];
+        $roleContext = $this->resolveRoleContext($request);
+
+        if (!$pondokId) {
+            abort(422, 'Pilih pondok terlebih dahulu.');
+        }
+
+        $tahunAjaranId = $request->input('tahun_ajaran_id') ? (int) $request->input('tahun_ajaran_id') : null;
+        $kelasId = $request->input('kelas_id') ? (int) $request->input('kelas_id') : null;
+
+        $data = $this->reportService->getRaportData($pondokId, $nis, $tahunAjaranId, $kelasId);
+        if (!$data) {
+            abort(404, 'Data raport tidak ditemukan untuk filter yang dipilih.');
+        }
+
+        return inertia('Reports/RaportPreview', [
+            'authRole' => $roleContext['authRole'],
+            'baseUrl' => $roleContext['baseUrl'],
+            'santri' => $data['santri'],
+            'placement' => $data['placement'],
+            'hafalans' => $data['hafalans'],
+            'ujianNilais' => $data['ujian_nilais'],
+            'pondokNama' => $data['santri']->pondok?->nama ?? '-',
+            'filters' => $request->only(['tahun_ajaran_id', 'kelas_id']),
+        ]);
+    }
+
 
     public function raportPdf(Request $request, string $nis)
     {
@@ -280,6 +310,7 @@ class ReportController extends Controller
             'hafalans' => $hafalans,
             'ujianNilais' => $ujianNilais,
             'pondokNama' => $santri->pondok?->nama ?? '-',
+            'keterangan' => $request->input('keterangan'),
         ])->setPaper('A4', 'portrait');
 
         return $pdf->download("Raport_{$santri->nama}_{$santri->nis}.pdf");

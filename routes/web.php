@@ -45,6 +45,7 @@ Route::prefix('super-admin')
         Route::get('laporan/ujian/{id}', [ReportController::class, 'laporanUjianDetail'])->name('laporan.ujian.detail');
         Route::get('laporan/ujian/{id}/pdf', [ReportController::class, 'laporanUjianPdf'])->name('laporan.ujian.pdf');
         Route::get('laporan/raport', [ReportController::class, 'raport'])->name('laporan.raport');
+        Route::get('laporan/raport/{nis}/preview', [ReportController::class, 'raportPreview'])->name('laporan.raport.preview');
         Route::get('laporan/raport/{nis}/pdf', [ReportController::class, 'raportPdf'])->name('laporan.raport.pdf');
     });
 
@@ -116,6 +117,7 @@ Route::prefix('admin-cabang')
         Route::get('laporan/ujian/{id}', [ReportController::class, 'laporanUjianDetail'])->name('laporan.ujian.detail');
         Route::get('laporan/ujian/{id}/pdf', [ReportController::class, 'laporanUjianPdf'])->name('laporan.ujian.pdf');
         Route::get('laporan/raport', [ReportController::class, 'raport'])->name('laporan.raport');
+        Route::get('laporan/raport/{nis}/preview', [ReportController::class, 'raportPreview'])->name('laporan.raport.preview');
         Route::get('laporan/raport/{nis}/pdf', [ReportController::class, 'raportPdf'])->name('laporan.raport.pdf');
     });
 
@@ -150,5 +152,6 @@ Route::prefix('ustadz')
         Route::get('/laporan/ujian/{id}', [ReportController::class, 'laporanUjianDetail'])->name('laporan.ujian.detail');
         Route::get('/laporan/ujian/{id}/pdf', [ReportController::class, 'laporanUjianPdf'])->name('laporan.ujian.pdf');
         Route::get('/laporan/raport', [ReportController::class, 'raport'])->name('laporan.raport');
+        Route::get('/laporan/raport/{nis}/preview', [ReportController::class, 'raportPreview'])->name('laporan.raport.preview');
         Route::get('/laporan/raport/{nis}/pdf', [ReportController::class, 'raportPdf'])->name('laporan.raport.pdf');
     });

@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { router, Link } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 import RoleLayout from '../shared/RoleLayout';
 import CommonFilterForm from './components/CommonFilterForm';
@@ -17,8 +17,8 @@ function cleanParams(filters) {
 
 function buildPrintUrl(baseUrl, nis, filters) {
     const query = new URLSearchParams(cleanParams(filters)).toString();
-    if (!query) return `${baseUrl}/laporan/raport/${nis}/pdf`;
-    return `${baseUrl}/laporan/raport/${nis}/pdf?${query}`;
+    if (!query) return `${baseUrl}/laporan/raport/${nis}/preview`;
+    return `${baseUrl}/laporan/raport/${nis}/preview?${query}`;
 }
 
 function formatStatus(status) {
@@ -115,7 +115,7 @@ export default function RaportPage(props) {
                                             <td className="px-3 py-2">{formatStatus(row.status_penempatan)}</td>
                                             <td className="px-3 py-2">{row.periode_penempatan || '-'}</td>
                                             <td className="px-3 py-2">
-                                                <a
+                                                <Link
                                                     href={buildPrintUrl(baseUrl, row.nis, {
                                                         ...localFilters,
                                                         tahun_ajaran_id: row.tahun_ajaran_id,
@@ -124,7 +124,7 @@ export default function RaportPage(props) {
                                                     className="rounded-md bg-indigo-600 px-3 py-2 text-xs font-semibold text-white hover:bg-indigo-700"
                                                 >
                                                     Cetak Raport
-                                                </a>
+                                                </Link>
                                             </td>
                                         </tr>
                                     ))}
