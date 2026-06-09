@@ -15,6 +15,8 @@ class SkemaPenilaianItem extends Model
         'singkatan',
         'label',
         'urutan',
+        'batas_bawah',
+        'batas_atas',
     ];
 
     public function skemaPenilaian()

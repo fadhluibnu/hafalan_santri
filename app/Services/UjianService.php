@@ -83,8 +83,9 @@ class UjianService
     public function updateNilai(Ujian $ujian, array $items): void
     {
         $snapshot = $ujian->skema_snapshot ?: [];
+        $tipe = $snapshot['tipe'] ?? 'label';
 
-        DB::transaction(function () use ($ujian, $items, $snapshot) {
+        DB::transaction(function () use ($ujian, $items, $snapshot, $tipe) {
             foreach ($items as $item) {
                 $nilaiId = isset($item['id']) ? (int) $item['id'] : 0;
                 if ($nilaiId <= 0) {
@@ -100,16 +101,30 @@ class UjianService
                     continue;
                 }
 
-                $nilaiLabel = $this->normalizeNilai(
-                    $snapshot,
-                    $item['nilai_label'] ?? null
-                );
-
-                $nilai->update([
-                    'nilai_angka' => null,
-                    'nilai_label' => $nilaiLabel,
+                $updateData = [
                     'catatan' => isset($item['catatan']) && $item['catatan'] !== '' ? $item['catatan'] : null,
-                ]);
+                ];
+
+                if ($tipe === 'numeric') {
+                    $nilaiAngka = isset($item['nilai_angka']) ? trim((string)$item['nilai_angka']) : '';
+                    if ($nilaiAngka !== '') {
+                        if (!is_numeric($nilaiAngka) || $nilaiAngka < 0 || $nilaiAngka > 100) {
+                            throw ValidationException::withMessages([
+                                'nilai' => 'Untuk skema angka murni, nilai harus berupa angka antara 0 dan 100.',
+                            ]);
+                        }
+                        $updateData['nilai_angka'] = (string)(float)$nilaiAngka;
+                        $updateData['nilai_label'] = null;
+                    } else {
+                        $updateData['nilai_angka'] = null;
+                        $updateData['nilai_label'] = null;
+                    }
+                } else {
+                    $updateData['nilai_label'] = $this->normalizeNilai($snapshot, $item['nilai_label'] ?? null);
+                    $updateData['nilai_angka'] = null;
+                }
+
+                $nilai->update($updateData);
             }
         });
     }
@@ -152,7 +167,7 @@ class UjianService
 
         if (!in_array($label, $allowed, true)) {
             throw ValidationException::withMessages([
-                'nilai' => 'Nilai tidak ada di skema penilaian pondok.',
+                'nilai' => 'Nilai kategori tidak ada di skema penilaian pondok.',
             ]);
         }
 

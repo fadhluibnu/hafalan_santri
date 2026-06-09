@@ -130,6 +130,7 @@ class UjianController extends Controller
             'nilai' => 'required|array',
             'nilai.*.id' => 'required|integer|exists:ujian_nilais,id',
             'nilai.*.nilai_label' => 'nullable|string|max:20',
+            'nilai.*.nilai_angka' => 'nullable|numeric|min:0|max:100',
             'nilai.*.catatan' => 'nullable|string',
         ]);
 

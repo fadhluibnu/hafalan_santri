@@ -3,7 +3,7 @@ import HafalanForm from '../components/HafalanForm';
 import Layout from '../components/Layout';
 import { route } from 'ziggy-js';
 
-const HafalanCreate = ({ classes, santrisByClass, ustadzs, surahs, currentUstadzId, nilaiOptions = [] }) => {
+const HafalanCreate = ({ classes, santrisByClass, ustadzs, surahs, currentUstadzId, skemaPenilaian = { tipe: 'label', items: [] } }) => {
     const { data, setData, post, processing, errors } = useForm({
         kelas_id: '',
         santri_id: '',
@@ -55,7 +55,7 @@ const HafalanCreate = ({ classes, santrisByClass, ustadzs, surahs, currentUstadz
                         santrisByClass={santrisByClass}
                         ustadzs={ustadzs}
                         surahs={surahs}
-                        nilaiOptions={nilaiOptions}
+                        skemaPenilaian={skemaPenilaian}
                     />
                 </div>
             </div>

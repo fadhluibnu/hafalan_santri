@@ -25,6 +25,7 @@ class SkemaPenilaianController extends Controller
             'skema' => $skema ? [
                 'id' => $skema->id,
                 'nama' => $skema->nama,
+                'tipe' => $skema->tipe,
                 'keterangan' => $skema->keterangan,
                 'items' => $skema->items->map(function ($item) {
                     $nama = trim((string) ($item->nama ?: $item->label));
@@ -35,6 +36,8 @@ class SkemaPenilaianController extends Controller
                         'nama' => $nama,
                         'singkatan' => $singkatan,
                         'urutan' => (int) $item->urutan,
+                        'batas_bawah' => $item->batas_bawah !== null ? (float) $item->batas_bawah : null,
+                        'batas_atas' => $item->batas_atas !== null ? (float) $item->batas_atas : null,
                     ];
                 })->values(),
             ] : null,
@@ -46,13 +49,16 @@ class SkemaPenilaianController extends Controller
         $admin = AdminCabang::where('user_id', Auth::id())->firstOrFail();
 
         $validated = $request->validate([
-            'items' => 'required|array|min:1',
-            'items.*.nama' => 'required|string|max:100',
-            'items.*.singkatan' => 'required|string|max:20',
+            'tipe' => 'required|in:label,numeric',
+            'items' => 'required_if:tipe,label|array',
+            'items.*.nama' => 'required_if:tipe,label|string|max:100',
+            'items.*.singkatan' => 'required_if:tipe,label|string|max:20',
+            'items.*.batas_bawah' => 'nullable|numeric',
+            'items.*.batas_atas' => 'nullable|numeric',
             'keterangan' => 'nullable|string',
         ]);
 
-        $items = collect($validated['items'])
+        $items = collect($validated['items'] ?? [])
             ->map(function ($item) {
                 $nama = trim((string) ($item['nama'] ?? ''));
                 $singkatan = strtoupper(trim((string) ($item['singkatan'] ?? '')));
@@ -60,6 +66,8 @@ class SkemaPenilaianController extends Controller
                 return [
                     'nama' => $nama,
                     'singkatan' => $singkatan,
+                    'batas_bawah' => isset($item['batas_bawah']) && $item['batas_bawah'] !== '' ? (float) $item['batas_bawah'] : null,
+                    'batas_atas' => isset($item['batas_atas']) && $item['batas_atas'] !== '' ? (float) $item['batas_atas'] : null,
                 ];
             })
             ->filter(function ($item) {
@@ -67,9 +75,9 @@ class SkemaPenilaianController extends Controller
             })
             ->values();
 
-        if ($items->isEmpty()) {
+        if ($validated['tipe'] === 'label' && $items->isEmpty()) {
             return back()->withErrors([
-                'items' => 'Minimal satu parameter penilaian harus diisi.',
+                'items' => 'Minimal satu parameter penilaian harus diisi untuk tipe kategori.',
             ])->withInput();
         }
 
@@ -78,6 +86,17 @@ class SkemaPenilaianController extends Controller
             return back()->withErrors([
                 'items' => "Singkatan {$duplicateSingkatan} duplikat. Gunakan singkatan yang unik.",
             ])->withInput();
+        }
+
+        // Validate batas_bawah and batas_atas logic if tipe is label
+        if ($validated['tipe'] === 'label') {
+            foreach ($items as $index => $item) {
+                if ($item['batas_bawah'] !== null && $item['batas_atas'] !== null && $item['batas_bawah'] >= $item['batas_atas']) {
+                    return back()->withErrors([
+                        'items' => "Batas Bawah pada item {$item['nama']} tidak boleh lebih besar atau sama dengan Batas Atas.",
+                    ])->withInput();
+                }
+            }
         }
 
         DB::transaction(function () use ($admin, $validated, $items) {
@@ -89,6 +108,7 @@ class SkemaPenilaianController extends Controller
                 ['pondok_id' => $admin->pondok_id],
                 [
                     'nama' => $existing?->nama ?: 'Skema Penilaian Pondok',
+                    'tipe' => $validated['tipe'],
                     'is_active' => true,
                     'keterangan' => $validated['keterangan'] ?? null,
                 ]
@@ -96,14 +116,18 @@ class SkemaPenilaianController extends Controller
 
             $skema->items()->delete();
 
-            foreach ($items as $index => $item) {
-                $skema->items()->create([
-                    'nama' => $item['nama'],
-                    'singkatan' => $item['singkatan'],
-                    // Tetap isi label untuk kompatibilitas data lama.
-                    'label' => $item['singkatan'],
-                    'urutan' => $index + 1,
-                ]);
+            if ($validated['tipe'] === 'label') {
+                foreach ($items as $index => $item) {
+                    $skema->items()->create([
+                        'nama' => $item['nama'],
+                        'singkatan' => $item['singkatan'],
+                        // Tetap isi label untuk kompatibilitas data lama.
+                        'label' => $item['singkatan'],
+                        'urutan' => $index + 1,
+                        'batas_bawah' => $item['batas_bawah'],
+                        'batas_atas' => $item['batas_atas'],
+                    ]);
+                }
             }
         });
 

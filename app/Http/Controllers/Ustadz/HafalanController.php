@@ -128,7 +128,7 @@ class HafalanController extends Controller
             'ustadzs' => $ustadzs,
             'surahs' => $surahs,
             'currentUstadzId' => $ustadz->id ?? null,
-            'nilaiOptions' => $this->nilaiOptionsForPondok($pondokId),
+            'skemaPenilaian' => $this->getSkemaPenilaianInfo($pondokId),
         ]);
     }
 
@@ -326,7 +326,7 @@ class HafalanController extends Controller
             'santrisByClass' => $santrisByClass,
             'ustadzs' => $ustadzs,
             'surahs' => $surahs,
-            'nilaiOptions' => $this->nilaiOptionsForPondok($pondokId),
+            'skemaPenilaian' => $this->getSkemaPenilaianInfo($pondokId),
         ]);
     }
 
@@ -438,17 +438,21 @@ class HafalanController extends Controller
         }
     }
 
-    private function nilaiOptionsForPondok(?int $pondokId): array
+    private function getSkemaPenilaianInfo(?int $pondokId): array
     {
         if (!$pondokId) {
-            return [];
+            return ['tipe' => 'label', 'items' => []];
         }
 
         $skema = SkemaPenilaian::activeForPondok($pondokId);
-        $snapshot = $skema ? $skema->toSnapshot() : [];
+        if (!$skema) {
+            return ['tipe' => 'label', 'items' => []];
+        }
+
+        $snapshot = $skema->toSnapshot();
         $items = $snapshot['items'] ?? [];
 
-        return collect($items)
+        $mappedItems = collect($items)
             ->map(function (array $item) {
                 $singkatan = strtoupper(trim((string) ($item['singkatan'] ?? '')));
                 $nama = trim((string) ($item['nama'] ?? ''));
@@ -460,24 +464,44 @@ class HafalanController extends Controller
                 return [
                     'value' => $singkatan,
                     'label' => $nama !== '' ? "{$singkatan} - {$nama}" : $singkatan,
+                    'batas_bawah' => $item['batas_bawah'] ?? null,
+                    'batas_atas' => $item['batas_atas'] ?? null,
                 ];
             })
             ->filter()
             ->values()
             ->all();
+
+        return [
+            'tipe' => $skema->tipe,
+            'items' => $mappedItems,
+        ];
     }
 
     private function normalizeNilaiForPondok(?int $pondokId, mixed $nilaiInput): string
     {
-        $nilai = strtoupper(trim((string) $nilaiInput));
-        $allowed = collect($this->nilaiOptionsForPondok($pondokId))->pluck('value');
+        $skemaInfo = $this->getSkemaPenilaianInfo($pondokId);
+        $tipe = $skemaInfo['tipe'];
+        
+        $nilai = trim((string) $nilaiInput);
+        
+        if ($tipe === 'numeric') {
+            if (!is_numeric($nilai) || $nilai < 0 || $nilai > 100) {
+                throw new \Exception('Untuk skema angka murni, nilai harus berupa angka antara 0 dan 100.');
+            }
+            return (string)(float)$nilai;
+        }
+
+        // Kategori / Label
+        $nilai = strtoupper($nilai);
+        $allowed = collect($skemaInfo['items'])->pluck('value');
 
         if ($allowed->isEmpty()) {
             throw new \Exception('Skema penilaian aktif untuk pondok ini belum diatur.');
         }
 
         if (!$allowed->contains($nilai)) {
-            throw new \Exception('Nilai tidak ada di skema penilaian pondok.');
+            throw new \Exception('Nilai kategori tidak ada di skema penilaian pondok.');
         }
 
         return $nilai;

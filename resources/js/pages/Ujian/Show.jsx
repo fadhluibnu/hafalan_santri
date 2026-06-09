@@ -17,6 +17,7 @@ export default function UjianShow({
     queryPondokId = null,
 }) {
     const snapshot = ujian?.skema_snapshot || {};
+    const isNumeric = snapshot?.tipe === 'numeric';
     const items = Array.isArray(snapshot?.items) && snapshot.items.length > 0
         ? snapshot.items
         : Array.isArray(snapshot?.labels)
@@ -51,6 +52,7 @@ export default function UjianShow({
             (ujian?.nilai || []).map((row) => ({
                 id: row.id,
                 nilai_label: row.nilai_label ? String(row.nilai_label).toUpperCase() : '',
+                nilai_angka: row.nilai_angka !== null ? row.nilai_angka : '',
                 catatan: row.catatan ?? '',
             })),
         [ujian]
@@ -170,7 +172,7 @@ export default function UjianShow({
                 <div className="rounded-lg border bg-white p-4">
                     <h3 className="mb-3 text-base font-semibold text-gray-800">Daftar Nilai Santri</h3>
 
-                    {!isReadOnly && nilaiOptions.length === 0 && (
+                    {!isReadOnly && !isNumeric && nilaiOptions.length === 0 && (
                         <div className="mb-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
                             Parameter penilaian belum tersedia pada snapshot ujian ini.
                         </div>
@@ -209,6 +211,17 @@ export default function UjianShow({
                                             <td className="px-3 py-2">
                                                 {isReadOnly ? (
                                                     <span>{getNilaiDisplay(row.nilai_label, row.nilai_angka)}</span>
+                                                ) : isNumeric ? (
+                                                    <input
+                                                        type="number"
+                                                        value={data.nilai[index]?.nilai_angka ?? ''}
+                                                        onChange={(e) => updateNilai(index, 'nilai_angka', e.target.value)}
+                                                        className="w-40 rounded-md border px-2 py-1"
+                                                        step="0.01"
+                                                        min="0"
+                                                        max="100"
+                                                        placeholder="0 - 100"
+                                                    />
                                                 ) : (
                                                     <select
                                                         value={data.nilai[index]?.nilai_label ?? ''}

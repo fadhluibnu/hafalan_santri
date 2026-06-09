@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import FormInput from '../../SuperAdmin/components/FormInput';
 
 // This form aligns with App\Models\Hafalan::$fillable
-const HafalanForm = ({ formData, setFormData, onSubmit, processing, classes = [], santrisByClass = {}, ustadzs = [], surahs = [], nilaiOptions = [] }) => {
+const HafalanForm = ({ formData, setFormData, onSubmit, processing, classes = [], santrisByClass = {}, ustadzs = [], surahs = [], skemaPenilaian = { tipe: 'label', items: [] } }) => {
 	const kelasOptions = classes.map((c) => ({ value: c.id, label: c.nama }));
 	const ustadzOptions = ustadzs.map((g) => ({ value: g.id, label: g.nama }));
 	const surahOptions = surahs.map((s) => ({ value: s.id, label: s.name }));
@@ -50,13 +50,17 @@ const HafalanForm = ({ formData, setFormData, onSubmit, processing, classes = []
 		{ value: 'murojaah', label: 'Murojaah' },
 		{ value: 'semaan', label: 'Sema’an' },
 	];
-	const hasNilaiOptions = nilaiOptions.length > 0;
+	
+	const isNumeric = skemaPenilaian.tipe === 'numeric';
+	const nilaiOptions = skemaPenilaian.items || [];
+	const hasSkemaItems = nilaiOptions.length > 0;
+	const isSkemaValid = isNumeric || hasSkemaItems;
 
 	return (
 		<form onSubmit={onSubmit} className="space-y-4">
-			{!hasNilaiOptions && (
+			{!isSkemaValid && (
 				<div className="rounded-md border border-yellow-300 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
-					Skema penilaian aktif belum tersedia.
+					Skema penilaian aktif belum diatur secara lengkap.
 				</div>
 			)}
 			<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -81,7 +85,7 @@ const HafalanForm = ({ formData, setFormData, onSubmit, processing, classes = []
 				/>
 				<FormInput
 					type="select"
-					label="ustadz"
+					label="Ustadz"
 					name="ustadz_id"
 					value={formData.ustadz_id}
 					onChange={(e) => set('ustadz_id', e.target.value)}
@@ -152,16 +156,33 @@ const HafalanForm = ({ formData, setFormData, onSubmit, processing, classes = []
 					options={kategoriOptions}
 					required
 				/>
-				<FormInput
-					type="select"
-					label="Nilai"
-					name="nilai"
-					value={formData.nilai}
-					onChange={(e) => set('nilai', e.target.value)}
-					options={nilaiOptions}
-					required
-					disabled={!hasNilaiOptions}
-				/>
+				
+				{isNumeric ? (
+					<FormInput
+						type="number"
+						label="Nilai Angka (0-100)"
+						name="nilai"
+						value={formData.nilai}
+						onChange={(e) => set('nilai', e.target.value)}
+						placeholder="Misal 85.5"
+						step="0.01"
+						min="0"
+						max="100"
+						required
+						disabled={!isSkemaValid}
+					/>
+				) : (
+					<FormInput
+						type="select"
+						label="Nilai Kategori"
+						name="nilai"
+						value={formData.nilai}
+						onChange={(e) => set('nilai', e.target.value)}
+						options={nilaiOptions}
+						required
+						disabled={!isSkemaValid}
+					/>
+				)}
 			</div>
 			<FormInput
 				type="textarea"
@@ -174,7 +195,7 @@ const HafalanForm = ({ formData, setFormData, onSubmit, processing, classes = []
 			<div className="flex items-center justify-end space-x-2">
 				<button
 					type="submit"
-					disabled={processing || !hasNilaiOptions}
+					disabled={processing || !isSkemaValid}
 					className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
 				>
 					{processing ? 'Menyimpan...' : 'Simpan'}

@@ -41,9 +41,9 @@ class DatabaseSeeder extends Seeder
             KesehatanSantriSeeder::class,
             
             // // Penempatan Santri ke Kelas
-            // SantriKelasSeeder::class,
+            SantriKelasSeeder::class,
             
-            // // Data Hafalan
+            // Data Hafalan
             // HafalanSeeder::class,
         ]);
 

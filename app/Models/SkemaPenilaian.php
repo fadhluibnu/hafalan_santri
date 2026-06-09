@@ -12,6 +12,7 @@ class SkemaPenilaian extends Model
     protected $fillable = [
         'pondok_id',
         'nama',
+        'tipe',
         'is_active',
         'keterangan',
     ];
@@ -55,6 +56,8 @@ class SkemaPenilaian extends Model
                     'nama' => $nama,
                     'singkatan' => $singkatan,
                     'urutan' => (int) $item->urutan,
+                    'batas_bawah' => $item->batas_bawah !== null ? (float) $item->batas_bawah : null,
+                    'batas_atas' => $item->batas_atas !== null ? (float) $item->batas_atas : null,
                 ];
             })
             ->filter()
@@ -64,6 +67,7 @@ class SkemaPenilaian extends Model
         return [
             'id' => $this->id,
             'nama' => $this->nama,
+            'tipe' => $this->tipe,
             'items' => $items,
         ];
     }
