@@ -1,23 +1,6 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <title>Raport - {{ $santri->nama }}</title>
-    <style>
-        body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #222; }
-        .header { text-align: center; margin-bottom: 14px; border-bottom: 2px solid #0f766e; padding-bottom: 8px; }
-        .header h1 { margin: 0; font-size: 16px; }
-        .header p { margin: 3px 0 0; font-size: 11px; color: #555; }
-        table { width: 100%; border-collapse: collapse; }
-        .meta td { padding: 3px 6px; vertical-align: top; }
-        .meta td:first-child { width: 30%; font-weight: bold; color: #444; }
-        .grid th, .grid td { border: 1px solid #ddd; padding: 4px 6px; font-size: 10px; }
-        .grid th { background: #f0fdfa; text-align: left; }
-        .section-title { margin-top: 12px; margin-bottom: 6px; padding: 5px 8px; background: #0f766e; color: #fff; font-weight: bold; }
-        .muted { color: #777; font-size: 10px; margin-top: 10px; }
-    </style>
-</head>
-<body>
+@extends('pdf.layout')
+@section('title', 'Raport - ' . $santri->nama)
+@section('content')
     @php
         $formatNilaiUjian = function ($nilaiLabel, $snapshot, $nilaiAngka = null) {
             $label = strtoupper(trim((string) $nilaiLabel));
@@ -132,5 +115,4 @@
     </table>
 
     <p class="muted">Dicetak pada {{ now()->format('Y-m-d H:i:s') }}.</p>
-</body>
-</html>
+@endsection
