@@ -114,13 +114,9 @@ class ReportService
         }
 
         if ($tahunAjaranId) {
-            $tahunAjaran = TahunAjaran::find($tahunAjaranId);
-            if ($tahunAjaran) {
-                $hafalanQuery->whereBetween('tanggal_setor', [
-                    $tahunAjaran->tanggal_mulai->toDateString(),
-                    $tahunAjaran->tanggal_selesai->toDateString(),
-                ]);
-            }
+            $hafalanQuery->whereHas('kelas', function ($q) use ($tahunAjaranId) {
+                $q->where('tahun_ajaran_id', $tahunAjaranId);
+            });
         }
 
         $hafalanByPlacement = $hafalanQuery->get()->groupBy(function (Hafalan $hafalan) {
@@ -278,13 +274,10 @@ class ReportService
 
         if ($placement->kelas_id) {
             $hafalanQuery->where('kelas_id', $placement->kelas_id);
-        }
-
-        if ($placement->tahunAjaran) {
-            $hafalanQuery->whereBetween('tanggal_setor', [
-                $placement->tahunAjaran->tanggal_mulai->toDateString(),
-                $placement->tahunAjaran->tanggal_selesai->toDateString(),
-            ]);
+        } elseif ($placement->tahun_ajaran_id) {
+            $hafalanQuery->whereHas('kelas', function ($q) use ($placement) {
+                $q->where('tahun_ajaran_id', $placement->tahun_ajaran_id);
+            });
         }
 
         return [
