@@ -14,6 +14,7 @@ class TahunAjaran extends Model
     protected $fillable = [
         'pondok_id',
         'nama',
+        'semester',
         'tanggal_mulai',
         'tanggal_selesai',
         'is_active',
@@ -26,6 +27,17 @@ class TahunAjaran extends Model
         'tanggal_selesai' => 'date',
         'is_active' => 'boolean',
     ];
+
+    /**
+     * Accessor untuk menambahkan nama semester jika tersedia
+     */
+    public function getNamaAttribute($value)
+    {
+        if (isset($this->attributes['semester'])) {
+            return $value . ' (' . ucfirst($this->attributes['semester']) . ')';
+        }
+        return $value;
+    }
 
     /**
      * Relasi ke Pondok

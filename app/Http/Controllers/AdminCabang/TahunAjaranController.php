@@ -35,6 +35,7 @@ class TahunAjaranController extends Controller
                 return [
                     'id' => $ta->id,
                     'nama' => $ta->nama,
+                    'semester' => $ta->semester,
                     'tanggal_mulai' => $ta->tanggal_mulai->format('Y-m-d'),
                     'tanggal_selesai' => $ta->tanggal_selesai->format('Y-m-d'),
                     'is_active' => $ta->is_active,
@@ -65,6 +66,7 @@ class TahunAjaranController extends Controller
 
         $validated = $request->validate([
             'nama' => 'required|string|max:50',
+            'semester' => 'required|in:ganjil,genap',
             'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after:tanggal_mulai',
             'keterangan' => 'nullable|string',
@@ -81,6 +83,7 @@ class TahunAjaranController extends Controller
             TahunAjaran::create([
                 'pondok_id' => $pondokId,
                 'nama' => $validated['nama'],
+                'semester' => $validated['semester'],
                 'tanggal_mulai' => $validated['tanggal_mulai'],
                 'tanggal_selesai' => $validated['tanggal_selesai'],
                 'keterangan' => $validated['keterangan'] ?? null,
@@ -110,7 +113,8 @@ class TahunAjaranController extends Controller
         return Inertia::render('AdminCabang/TahunAjaran/Edit', [
             'tahunAjaran' => [
                 'id' => $tahunAjaran->id,
-                'nama' => $tahunAjaran->nama,
+                'nama' => $tahunAjaran->getRawOriginal('nama'),
+                'semester' => $tahunAjaran->semester,
                 'tanggal_mulai' => $tahunAjaran->tanggal_mulai->format('Y-m-d'),
                 'tanggal_selesai' => $tahunAjaran->tanggal_selesai->format('Y-m-d'),
                 'is_active' => $tahunAjaran->is_active,
@@ -130,6 +134,7 @@ class TahunAjaranController extends Controller
 
         $validated = $request->validate([
             'nama' => 'required|string|max:50',
+            'semester' => 'required|in:ganjil,genap',
             'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after:tanggal_mulai',
             'keterangan' => 'nullable|string',
@@ -147,6 +152,7 @@ class TahunAjaranController extends Controller
 
             $tahunAjaran->update([
                 'nama' => $validated['nama'],
+                'semester' => $validated['semester'],
                 'tanggal_mulai' => $validated['tanggal_mulai'],
                 'tanggal_selesai' => $validated['tanggal_selesai'],
                 'keterangan' => $validated['keterangan'] ?? null,

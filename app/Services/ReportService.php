@@ -38,7 +38,7 @@ class ReportService
         $tahunAjarans = TahunAjaran::query()
             ->where('pondok_id', $pondokId)
             ->orderByDesc('tanggal_mulai')
-            ->get(['id', 'nama', 'is_active', 'tanggal_mulai', 'tanggal_selesai']);
+            ->get(['id', 'nama', 'semester', 'is_active', 'tanggal_mulai', 'tanggal_selesai']);
 
         $selectedTahunAjaranId = $tahunAjaranId ?: $this->getDefaultTahunAjaranId($pondokId);
 
@@ -69,7 +69,7 @@ class ReportService
             ->with([
                 'santri:id,nis,nama,pondok_id',
                 'kelas:id,nama,tahun_ajaran_id',
-                'tahunAjaran:id,nama,tanggal_mulai,tanggal_selesai',
+                'tahunAjaran:id,nama,semester,tanggal_mulai,tanggal_selesai',
             ])
             ->whereHas('santri', function ($q) use ($pondokId) {
                 $q->where('pondok_id', $pondokId);
@@ -167,7 +167,7 @@ class ReportService
         int $perPage = 15
     ): LengthAwarePaginator {
         $query = Ujian::query()
-            ->with(['kelas:id,nama', 'tahunAjaran:id,nama', 'ustadz:id,nama'])
+            ->with(['kelas:id,nama', 'tahunAjaran:id,nama,semester', 'ustadz:id,nama'])
             ->withCount('nilaiSantri')
             ->where('pondok_id', $pondokId);
 
@@ -211,7 +211,7 @@ class ReportService
         $ujian = Ujian::query()
             ->with([
                 'kelas:id,nama',
-                'tahunAjaran:id,nama',
+                'tahunAjaran:id,nama,semester',
                 'ustadz:id,nama',
                 'nilaiSantri' => function ($q) {
                     $q->with('santri:id,nis,nama');
@@ -246,7 +246,7 @@ class ReportService
         }
 
         $placementQuery = SantriKelas::query()
-            ->with(['kelas:id,nama,tahun_ajaran_id', 'tahunAjaran:id,nama,tanggal_mulai,tanggal_selesai'])
+            ->with(['kelas:id,nama,tahun_ajaran_id', 'tahunAjaran:id,nama,semester,tanggal_mulai,tanggal_selesai'])
             ->where('santri_id', $santri->id);
 
         if ($tahunAjaranId) {

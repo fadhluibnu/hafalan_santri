@@ -74,7 +74,7 @@ class HandleInertiaRequests extends Middleware
             if ($pondokId && in_array($user->role, ['admin_cabang', 'ustadz'])) {
                 $tahunAjarans = \App\Models\TahunAjaran::where('pondok_id', $pondokId)
                     ->orderBy('tanggal_mulai', 'desc')
-                    ->get(['id', 'nama', 'is_active', 'status']);
+                    ->get(['id', 'nama', 'semester', 'is_active', 'status']);
                 
                 // Get selected tahun ajaran from session or use active one
                 $selectedTahunAjaranId = $request->session()->get('selected_tahun_ajaran_id');

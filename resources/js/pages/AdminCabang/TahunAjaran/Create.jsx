@@ -5,6 +5,7 @@ import Layout from '../components/Layout';
 const TahunAjaranCreate = () => {
     const { data, setData, post, processing, errors } = useForm({
         nama: '',
+        semester: 'ganjil',
         tanggal_mulai: '',
         tanggal_selesai: '',
         is_active: false,
@@ -57,6 +58,22 @@ const TahunAjaranCreate = () => {
                                 </button>
                             </div>
                             {errors.nama && <p className="mt-1 text-sm text-red-500">{errors.nama}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Semester <span className="text-red-500">*</span>
+                            </label>
+                            <select
+                                value={data.semester}
+                                onChange={(e) => setData('semester', e.target.value)}
+                                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-green-500 focus:ring-green-500"
+                                required
+                            >
+                                <option value="ganjil">Ganjil</option>
+                                <option value="genap">Genap</option>
+                            </select>
+                            {errors.semester && <p className="mt-1 text-sm text-red-500">{errors.semester}</p>}
                         </div>
 
                         <div className="flex items-center">
