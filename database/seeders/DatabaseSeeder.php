@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             // Pondok & Admin
             PondokSeeder::class,
             AdminCabangSeeder::class,
+            SkemaPenilaianSeeder::class,
             
             // Tahun Ajaran (harus sebelum Kelas)
             TahunAjaranSeeder::class,
@@ -44,7 +45,10 @@ class DatabaseSeeder extends Seeder
             SantriKelasSeeder::class,
             
             // Data Hafalan
-            // HafalanSeeder::class,
+            HafalanSeeder::class,
+            
+            // Data Ujian
+            UjianSeeder::class,
         ]);
 
         echo "\n✅ Semua seeder berhasil dijalankan!\n";

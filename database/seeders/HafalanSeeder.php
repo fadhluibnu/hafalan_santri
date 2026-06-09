@@ -8,8 +8,9 @@ use App\Models\Ustadz;
 use App\Models\Kelas;
 use App\Models\QuranSurah;
 use App\Models\Pondok;
+use App\Models\SantriKelas;
+use App\Models\SkemaPenilaian;
 use Illuminate\Database\Seeder;
-use Faker\Factory as Faker;
 
 class HafalanSeeder extends Seeder
 {
@@ -18,12 +19,11 @@ class HafalanSeeder extends Seeder
      */
     public function run(): void
     {
-        $faker = Faker::create('id_ID');
         $pondoks = Pondok::all();
-        $kategoriHafalan = ['Sabaq', 'Sabqi', 'Manzil'];
-        $surahs = QuranSurah::orderBy('id')->get();
+        // Mengambil surah-surah Juz 30 awal untuk simulasi terstruktur
+        $surahProgress = QuranSurah::whereIn('id', [78, 79, 80, 81, 82])->orderBy('id')->get();
 
-        if ($surahs->isEmpty()) {
+        if ($surahProgress->isEmpty()) {
             echo "QuranSurah belum di-seed. Skip HafalanSeeder.\n";
             return;
         }
@@ -31,73 +31,61 @@ class HafalanSeeder extends Seeder
         foreach ($pondoks as $pondok) {
             $santris = Santri::where('pondok_id', $pondok->id)
                 ->where('status_santri', 'aktif')
+                ->take(15) // Batasi 15 santri per pondok agar tidak terlalu lambat/gemuk
                 ->get();
             
-            // Get ustadzs (stored in gurus table)
             $ustadzs = Ustadz::where('pondok_id', $pondok->id)->get();
             
-            // Get kelas
-            $kelasList = Kelas::where('pondok_id', $pondok->id)->get();
+            if ($ustadzs->isEmpty() || $santris->isEmpty()) continue;
 
-            if ($ustadzs->isEmpty() || $kelasList->isEmpty()) continue;
+            $skema = SkemaPenilaian::activeForPondok($pondok->id);
+            $isNumeric = $skema && $skema->tipe === 'numeric';
+            $labelItems = [];
+            if ($skema && !$isNumeric) {
+                $labelItems = $skema->items->pluck('singkatan')->toArray();
+            }
+            if (empty($labelItems)) {
+                $labelItems = ['A', 'B', 'C'];
+            }
 
             foreach ($santris as $santri) {
-                // Generate 5-15 hafalan records per santri
-                $jumlahHafalan = $faker->numberBetween(5, 15);
-
-                for ($i = 0; $i < $jumlahHafalan; $i++) {
-                    $kategori = $faker->randomElement($kategoriHafalan);
-                    $ustadz = $ustadzs->random();
-                    $kelas = $kelasList->random();
+                $santriKelas = SantriKelas::where('santri_id', $santri->id)->where('status', 'aktif')->first();
+                if (!$santriKelas) continue;
+                
+                $kelas = Kelas::find($santriKelas->kelas_id);
+                if (!$kelas) continue;
+                
+                $ustadz = $ustadzs->first();
+                
+                // Setoran berurutan
+                foreach ($surahProgress as $index => $surah) {
+                    $hariMundur = (5 - $index) * 3; // 15, 12, 9, 6, 3 hari yang lalu
+                    $tanggal = now()->subDays($hariMundur)->format('Y-m-d');
                     
-                    // Pick random surah
-                    $surahIndex = $faker->numberBetween(0, $surahs->count() - 1);
-                    $dariSurah = $surahs[$surahIndex];
+                    // Jika numeric, berikan nilai 85, 87, 89, 91, 93
+                    // Jika label, berikan label secara rotasi, umumnya A atau B
+                    $nilai = $isNumeric 
+                        ? (85 + ($index * 2)) 
+                        : $labelItems[$index % count($labelItems)];
                     
-                    // Sampai surah bisa sama atau surah berikutnya
-                    $sampaiSurahIndex = $faker->randomElement([$surahIndex, min($surahIndex + 1, $surahs->count() - 1)]);
-                    $sampaiSurah = $surahs[$sampaiSurahIndex];
-
-                    $dariAyat = $faker->numberBetween(1, min(20, $dariSurah->jumlah_ayat ?? 20));
-                    
-                    if ($dariSurah->id === $sampaiSurah->id) {
-                        $sampaiAyat = $faker->numberBetween($dariAyat, min($dariAyat + 10, $sampaiSurah->jumlah_ayat ?? 30));
-                    } else {
-                        $sampaiAyat = $faker->numberBetween(1, min(10, $sampaiSurah->jumlah_ayat ?? 10));
-                    }
-
-                    // Generate random date in last 6 months
-                    $tanggalSetor = $faker->dateTimeBetween('-6 months', 'now');
-                    
-                    // Random juz 1-30
-                    $juz = $faker->numberBetween(1, 30);
-
                     Hafalan::create([
                         'santri_id' => $santri->id,
                         'ustadz_id' => $ustadz->id,
                         'kelas_id' => $kelas->id,
-                        'tanggal_setor' => $tanggalSetor->format('Y-m-d'),
-                        'juz' => $juz,
-                        'dari_surat' => $dariSurah->id,
-                        'dari_ayat' => $dariAyat,
-                        'sampai_surat' => $sampaiSurah->id,
-                        'sampai_ayat' => $sampaiAyat,
-                        'kategori' => $kategori,
-                        'nilai' => $faker->randomElement(['A', 'B', 'C', 'D']),
-                        'catatan' => $faker->randomElement([
-                            null,
-                            'Perlu perbaikan tajwid',
-                            'Sudah lancar',
-                            'Makhraj perlu diperbaiki',
-                            'Sangat baik',
-                            'Perlu muroja\'ah',
-                            'Hafalan kuat',
-                        ]),
+                        'tanggal_setor' => $tanggal,
+                        'juz' => 30,
+                        'dari_surat' => $surah->id,
+                        'dari_ayat' => 1,
+                        'sampai_surat' => $surah->id,
+                        'sampai_ayat' => $surah->jumlah_ayat ?? 10,
+                        'kategori' => 'Ziyadah',
+                        'nilai' => $nilai,
+                        'catatan' => 'Lancar dan baik',
                     ]);
                 }
             }
         }
 
-        echo "Seeder Hafalan selesai (5-15 hafalan per santri).\n";
+        echo "Seeder Hafalan selesai (Data terstruktur Juz 30).\n";
     }
 }
