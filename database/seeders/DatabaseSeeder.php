@@ -40,11 +40,11 @@ class DatabaseSeeder extends Seeder
             OrangTuaSeeder::class,
             KesehatanSantriSeeder::class,
             
-            // Penempatan Santri ke Kelas
-            SantriKelasSeeder::class,
+            // // Penempatan Santri ke Kelas
+            // SantriKelasSeeder::class,
             
-            // Data Hafalan
-            HafalanSeeder::class,
+            // // Data Hafalan
+            // HafalanSeeder::class,
         ]);
 
         echo "\n✅ Semua seeder berhasil dijalankan!\n";
