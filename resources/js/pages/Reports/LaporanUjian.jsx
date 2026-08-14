@@ -56,7 +56,7 @@ export default function LaporanUjianPage(props) {
     return (
         <RoleLayout authRole={authRole} title="Laporan Ujian">
             <div className="space-y-4">
-                <LaporanNav baseUrl={baseUrl} current="ujian" pondokId={localFilters.pondok_id} />
+                <LaporanNav baseUrl={baseUrl} current="ujian" pondokId={localFilters.pondok_id} authRole={authRole} />
 
                 <CommonFilterForm
                     filters={localFilters}

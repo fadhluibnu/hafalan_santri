@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ResolvesPondokScope;
 use App\Models\Ujian;
+use App\Services\LaporanWaliService;
 use App\Services\ReportService;
+use App\Support\LaporanWaliLayout;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,8 +15,10 @@ class ReportController extends Controller
 {
     use ResolvesPondokScope;
 
-    public function __construct(private readonly ReportService $reportService)
-    {
+    public function __construct(
+        private readonly ReportService $reportService,
+        private readonly LaporanWaliService $laporanWaliService,
+    ) {
     }
 
     public function daftarSantri(Request $request)
@@ -314,6 +318,125 @@ class ReportController extends Controller
         ])->setPaper('A4', 'portrait');
 
         return $pdf->download("Raport_{$santri->nama}_{$santri->nis}.pdf");
+    }
+
+    /**
+     * Halaman pemilihan santri untuk "Laporan Perkembangan Santri" (wali/orang tua).
+     */
+    public function laporanWali(Request $request)
+    {
+        $roleContext = $this->resolveRoleContext($request);
+        $this->pastikanBolehAksesLaporanWali($request);
+
+        $scope = $this->resolvePondokScope($request);
+        $pondokId = $scope['pondok_id'];
+
+        $filters = $this->buildCommonFilters($request, $pondokId);
+        $filters['bulan_akhir'] = $this->normalisasiBulan($request->input('bulan_akhir'));
+
+        $tahunAjarans = collect();
+        $kelasOptions = collect();
+        $rows = collect();
+
+        if ($pondokId) {
+            $options = $this->reportService->getFilterOptions($pondokId, $filters['tahun_ajaran_id']);
+            if (!$filters['tahun_ajaran_id']) {
+                $filters['tahun_ajaran_id'] = $options['selected_tahun_ajaran_id'];
+            }
+
+            $tahunAjarans = $options['tahun_ajarans'];
+            $kelasOptions = $options['kelas'];
+            $rows = $this->reportService->getSantriList(
+                $pondokId,
+                $filters['tahun_ajaran_id'],
+                $filters['kelas_id'],
+                $filters['search']
+            );
+        }
+
+        return Inertia::render('Reports/LaporanWali', [
+            ...$roleContext,
+            'filters' => $filters,
+            'rows' => $rows,
+            'pondokOptions' => $scope['pondok_options'],
+            'requiresPondokSelection' => $scope['requires_pondok_selection'],
+            'tahunAjarans' => $tahunAjarans,
+            'kelasOptions' => $kelasOptions,
+            // Periode laporan selalu 7 bulan karena grid tabelnya bagian dari gambar latar.
+            'jumlahBulan' => LaporanWaliService::JUMLAH_BULAN,
+        ]);
+    }
+
+    /**
+     * Unduh "Laporan Perkembangan Santri" sebagai PDF.
+     */
+    public function laporanWaliPdf(Request $request, string $nis)
+    {
+        $this->pastikanBolehAksesLaporanWali($request);
+
+        $scope = $this->resolvePondokScope($request);
+        $pondokId = $scope['pondok_id'];
+
+        if (!$pondokId) {
+            abort(422, 'Pilih pondok terlebih dahulu.');
+        }
+
+        $bulanAkhir = $this->normalisasiBulan($request->input('bulan_akhir'));
+
+        $data = $this->laporanWaliService->getLaporanData($pondokId, $nis, $bulanAkhir);
+        if (!$data) {
+            abort(404, 'Data santri tidak ditemukan pada pondok ini.');
+        }
+
+        $background = public_path(config('laporan.background'));
+        if (!is_file($background)) {
+            // Tanpa gambar latar, PDF hanya berisi teks mengambang tanpa kop dan
+            // tanpa grid tabel. Lebih baik gagal terang-terangan daripada
+            // menghasilkan laporan yang tampak rusak.
+            abort(500, 'Gambar latar template laporan tidak ditemukan: ' . config('laporan.background'));
+        }
+
+        $pdf = Pdf::loadView('pdf.laporan-wali', [
+            'santri' => $data['santri'],
+            'wali' => $data['wali'],
+            'pondokNama' => $data['pondok_nama'],
+            'baris' => $data['baris'],
+            'periode' => $data['periode'],
+            'footer' => config('laporan.footer'),
+            'backgroundPath' => $background,
+        ])->setPaper('A4', 'portrait');
+
+        $namaFile = sprintf(
+            'Laporan Perkembangan Santri - %s (%s).pdf',
+            $data['santri']->nama,
+            $data['periode']['bulan_akhir']
+        );
+
+        return $pdf->download($namaFile);
+    }
+
+    /**
+     * Laporan ini hanya untuk super admin dan admin cabang.
+     *
+     * Route-nya memang tidak didaftarkan pada grup ustadz, tapi pemeriksaan ini
+     * tetap ada supaya pembatasannya tidak bergantung pada susunan route saja.
+     */
+    private function pastikanBolehAksesLaporanWali(Request $request): void
+    {
+        if (!in_array($request->user()?->role, ['super_admin', 'admin_cabang'], true)) {
+            abort(403, 'Role Anda tidak berhak mengakses laporan wali.');
+        }
+    }
+
+    /**
+     * Terima bulan hanya dalam format 'Y-m'; nilai lain diabaikan agar
+     * penyusunan periode memakai default (bulan berjalan).
+     */
+    private function normalisasiBulan($bulan): ?string
+    {
+        $bulan = is_string($bulan) ? trim($bulan) : '';
+
+        return preg_match('/^\d{4}-\d{2}$/', $bulan) ? $bulan : null;
     }
 
     private function resolveRoleContext(Request $request): array

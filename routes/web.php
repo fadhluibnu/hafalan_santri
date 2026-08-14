@@ -47,6 +47,10 @@ Route::prefix('super-admin')
         Route::get('laporan/raport', [ReportController::class, 'raport'])->name('laporan.raport');
         Route::get('laporan/raport/{nis}/preview', [ReportController::class, 'raportPreview'])->name('laporan.raport.preview');
         Route::get('laporan/raport/{nis}/pdf', [ReportController::class, 'raportPdf'])->name('laporan.raport.pdf');
+        // Laporan perkembangan santri untuk wali/orang tua. Tidak didaftarkan
+        // pada grup ustadz karena laporan ini hanya untuk admin.
+        Route::get('laporan/laporan-wali', [ReportController::class, 'laporanWali'])->name('laporan.laporan-wali');
+        Route::get('laporan/laporan-wali/{nis}/pdf', [ReportController::class, 'laporanWaliPdf'])->name('laporan.laporan-wali.pdf');
     });
 
 Route::prefix('admin-cabang')
@@ -119,6 +123,10 @@ Route::prefix('admin-cabang')
         Route::get('laporan/raport', [ReportController::class, 'raport'])->name('laporan.raport');
         Route::get('laporan/raport/{nis}/preview', [ReportController::class, 'raportPreview'])->name('laporan.raport.preview');
         Route::get('laporan/raport/{nis}/pdf', [ReportController::class, 'raportPdf'])->name('laporan.raport.pdf');
+        // Laporan perkembangan santri untuk wali/orang tua. Tidak didaftarkan
+        // pada grup ustadz karena laporan ini hanya untuk admin.
+        Route::get('laporan/laporan-wali', [ReportController::class, 'laporanWali'])->name('laporan.laporan-wali');
+        Route::get('laporan/laporan-wali/{nis}/pdf', [ReportController::class, 'laporanWaliPdf'])->name('laporan.laporan-wali.pdf');
     });
 
 // Ustadz Routes (menggantikan Guru Routes)

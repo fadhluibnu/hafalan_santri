@@ -65,7 +65,7 @@ export default function CetakSantriPage(props) {
     return (
         <RoleLayout authRole={authRole} title="Laporan Cetak Santri">
             <div className="space-y-4">
-                <LaporanNav baseUrl={baseUrl} current="cetak-santri" pondokId={localFilters.pondok_id} />
+                <LaporanNav baseUrl={baseUrl} current="cetak-santri" pondokId={localFilters.pondok_id} authRole={authRole} />
 
                 <CommonFilterForm
                     filters={localFilters}

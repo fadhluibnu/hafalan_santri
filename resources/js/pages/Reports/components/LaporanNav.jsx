@@ -1,6 +1,13 @@
 import { Link } from '@inertiajs/react';
 
-export default function LaporanNav({ baseUrl, current, pondokId = '' }) {
+/**
+ * Navigasi antar halaman laporan.
+ *
+ * `authRole` menentukan menu yang tampil: "Laporan Wali" hanya untuk admin,
+ * sejalan dengan route-nya yang tidak didaftarkan pada grup ustadz. Tanpa ini,
+ * ustadz akan melihat tautan yang pasti menghasilkan 404.
+ */
+export default function LaporanNav({ baseUrl, current, pondokId = '', authRole = null }) {
     const suffix = pondokId ? `?pondok_id=${pondokId}` : '';
     const menus = [
         { key: 'daftar-santri', label: 'Daftar Santri', href: `${baseUrl}/laporan/daftar-santri${suffix}` },
@@ -8,6 +15,14 @@ export default function LaporanNav({ baseUrl, current, pondokId = '' }) {
         { key: 'ujian', label: 'Laporan Ujian', href: `${baseUrl}/laporan/ujian${suffix}` },
         { key: 'raport', label: 'Cetak Raport', href: `${baseUrl}/laporan/raport${suffix}` },
     ];
+
+    if (authRole === null || authRole === 'super_admin' || authRole === 'admin_cabang') {
+        menus.push({
+            key: 'laporan-wali',
+            label: 'Laporan Wali',
+            href: `${baseUrl}/laporan/laporan-wali${suffix}`,
+        });
+    }
 
     return (
         <div className="flex flex-wrap gap-2">

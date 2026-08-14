@@ -65,7 +65,7 @@ export default function RaportPage(props) {
     return (
         <RoleLayout authRole={authRole} title="Cetak Raport">
             <div className="space-y-4">
-                <LaporanNav baseUrl={baseUrl} current="raport" pondokId={localFilters.pondok_id} />
+                <LaporanNav baseUrl={baseUrl} current="raport" pondokId={localFilters.pondok_id} authRole={authRole} />
 
                 <CommonFilterForm
                     filters={localFilters}
