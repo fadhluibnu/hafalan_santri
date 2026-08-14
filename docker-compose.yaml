@@ -1,0 +1,32 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_hafalan_santri
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: hafalan_santri
+      MYSQL_USER: hafalan_santri
+      MYSQL_PASSWORD: hafalan_santri
+      TZ: Asia/Jakarta
+    ports:
+      - "3311:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: unless-stopped
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: phpmyadmin_hafalan_santri
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: hafalan_santri
+      PMA_PASSWORD: hafalan_santri
+    ports:
+      - "5748:80"
+    depends_on:
+      - mysql
+    restart: unless-stopped
+
+volumes:
+  mysql_data:

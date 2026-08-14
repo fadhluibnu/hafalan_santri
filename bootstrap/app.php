@@ -1,8 +1,9 @@
 <?php
 
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\IsAdminCabang;
+use App\Http\Middleware\IsUstadz;
 use App\Http\Middleware\IsSuperAdmin;
-use GuzzleHttp\Promise\Is;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -18,6 +19,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'super_admin' => IsSuperAdmin::class,
+            'admin_cabang' => IsAdminCabang::class,
+            'ustadz' => IsUstadz::class,
         ]);
 
         $middleware->web(append: [
@@ -30,3 +33,4 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
+

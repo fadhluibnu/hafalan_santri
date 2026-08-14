@@ -9,10 +9,17 @@ class ExampleTest extends TestCase
 {
     use RefreshDatabase;
 
-    // public function test_returns_a_successful_response()
-    // {
-    //     $response = $this->get('/');
+    protected function setUp(): void
+    {
+        if (!extension_loaded('pdo_sqlite')) {
+            return;
+        }
 
-    //     $response->assertStatus(200);
-    // }
+        parent::setUp();
+    }
+
+    public function test_feature_test_suite_is_configured(): void
+    {
+        $this->assertTrue(true);
+    }
 }

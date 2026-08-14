@@ -27,7 +27,7 @@ const PondokShow = ({ pondok }) => {
     // Stats cards for this pondok
     const statsCards = [
         // { name: "Admin Cabang", value: pondokData.stats.adminCabang },
-        { name: "Guru", value: pondokData.gurus.length },
+        { name: "Ustadz", value: pondokData.ustadzs.length },
         { name: "Santri", value: pondokData.santris.length },
         { name: "Kelas", value: pondokData.kelas.length },
     ];

@@ -15,7 +15,7 @@ class PondokController extends Controller
      */
     public function index()
     {
-        $pondoks = Pondok::with(['gurus', 'santris'])->orderBy('created_at', 'desc')->paginate(10);
+        $pondoks = Pondok::with(['ustadzs', 'santris'])->orderBy('created_at', 'desc')->paginate(10);
 
         return Inertia::render('SuperAdmin/Pondok/Index', [
             'pondoks' => $pondoks,
@@ -73,7 +73,7 @@ class PondokController extends Controller
      */
     public function show($pondok)
     {
-        $pondok = Pondok::with(['kelas', 'gurus', 'santris'])->findOrFail($pondok);
+        $pondok = Pondok::with(['kelas', 'ustadzs', 'santris'])->findOrFail($pondok);
         return Inertia::render('SuperAdmin/Pondok/Show', [
             'pondok' => $pondok,
         ]);

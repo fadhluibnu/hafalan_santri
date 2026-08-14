@@ -18,12 +18,12 @@ return new class extends Migration
             $table->foreignId('kelas_id');
             $table->date('tanggal_setor');
             $table->integer('juz');
-            $table->string('dari_surat');
+            $table->foreignId('dari_surat');
             $table->integer('dari_ayat');
-            $table->string('sampai_surat');
+            $table->foreignId('sampai_surat');
             $table->integer('sampai_ayat');
             $table->string('kategori');
-            $table->string('nilai', 5);
+            $table->string('nilai');
             $table->text('catatan')->nullable();
             $table->timestamps();
         });

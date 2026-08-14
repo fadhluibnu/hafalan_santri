@@ -15,7 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('pondok_id');
             $table->string('nama');
-            $table->foreignId('wali_kelas_id');
+            $table->string('tingkat')->nullable();
+            $table->integer('kapasitas')->nullable();
+            $table->foreignId('wali_kelas_id')->nullable();
             $table->text('keterangan')->nullable();
             $table->boolean('status')->default(true);
             $table->timestamps();

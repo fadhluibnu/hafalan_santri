@@ -26,11 +26,15 @@ class OrangTua extends Model
         'alamat',
     ];
 
+    protected $casts = [
+        'tanggal_lahir' => 'date',
+    ];
+
     /**
      * Relasi ke Santri.
      */
     public function santri()
     {
-        return $this->belongsTo(Santri::class);
+        return $this->belongsTo(Santri::class, 'santri_id');
     }
 }

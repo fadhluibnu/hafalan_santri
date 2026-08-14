@@ -64,11 +64,11 @@ class User extends Authenticatable
     }
 
     /**
-     * Relasi ke Guru.
+     * Relasi ke Ustadz.
      */
-    public function guru()
+    public function ustadz()
     {
-        return $this->hasOne(Guru::class);
+        return $this->hasOne(Ustadz::class);
     }
 
     /**
