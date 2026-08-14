@@ -18,14 +18,33 @@ export default function RaportPreview({ authRole, baseUrl, santri, placement, ha
         return '-';
     };
 
-    const buildPdfUrl = () => {
+    /**
+     * Query string bersama untuk tautan yang keluar dari halaman ini.
+     *
+     * `pondok_id` wajib ikut: untuk super admin, konteks pondok hanya dibawa
+     * lewat query string, sehingga tanpa itu endpoint PDF menolak dengan 422.
+     */
+    const buildFilterQuery = () => {
         const query = new URLSearchParams();
+        if (filters?.pondok_id) query.append('pondok_id', filters.pondok_id);
         if (filters?.tahun_ajaran_id) query.append('tahun_ajaran_id', filters.tahun_ajaran_id);
         if (filters?.kelas_id) query.append('kelas_id', filters.kelas_id);
+        return query;
+    };
+
+    const buildPdfUrl = () => {
+        const query = buildFilterQuery();
         if (keterangan) query.append('keterangan', keterangan);
 
         const q = query.toString();
         return `${baseUrl}/laporan/raport/${santri.nis}/pdf${q ? `?${q}` : ''}`;
+    };
+
+    // Membawa filter saat kembali, supaya super admin tidak mendarat di daftar
+    // kosong dan harus memilih pondok dari awal.
+    const buildBackUrl = () => {
+        const q = buildFilterQuery().toString();
+        return `${baseUrl}/laporan/raport${q ? `?${q}` : ''}`;
     };
 
     return (
@@ -40,7 +59,7 @@ export default function RaportPreview({ authRole, baseUrl, santri, placement, ha
                     </div>
                     <div className="flex gap-3">
                         <Link
-                            href={`${baseUrl}/laporan/raport`}
+                            href={buildBackUrl()}
                             className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
                         >
                             Kembali

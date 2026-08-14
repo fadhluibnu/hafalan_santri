@@ -281,7 +281,16 @@ class ReportController extends Controller
             'hafalans' => $data['hafalans'],
             'ujianNilais' => $data['ujian_nilais'],
             'pondokNama' => $data['santri']->pondok?->nama ?? '-',
-            'filters' => $request->only(['tahun_ajaran_id', 'kelas_id']),
+            'filters' => [
+                // pondok_id WAJIB ikut. Tanpa ini, tombol Export PDF di halaman
+                // preview kehilangan konteks pondok dan super admin mendapat 422
+                // dari raportPdf(), karena scope-nya dibaca dari query string.
+                // Diambil dari hasil resolvePondokScope() (sudah tervalidasi, dan
+                // untuk admin cabang terisi otomatis), bukan dari input mentah.
+                'pondok_id' => $pondokId,
+                'tahun_ajaran_id' => $tahunAjaranId,
+                'kelas_id' => $kelasId,
+            ],
         ]);
     }
 
